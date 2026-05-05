@@ -1,7 +1,7 @@
 from core.domain.entities.campaing import Campaign
 from core.ports.Campaign_Repository_Port import CampaignRepositoryPort
 from core.ports.llm_ports import LLMPort
-from core.ports.vector_db_port import VectorDBPort
+from core.ports.VectorDBPort import VectorDBPort
 
 
 class CreateCampaignUseCase:

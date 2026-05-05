@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 
 
 class VectorDBPort(ABC):
-    """عقد وسيط بين Core Logic والـ Vector Database"""
+
     
     @abstractmethod
     async def store_embedding(self, 
