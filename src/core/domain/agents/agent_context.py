@@ -7,7 +7,7 @@ from copy import deepcopy
 
 
 class AgentContext(BaseModel):
-    """Context shared between agents during orchestrated execution."""
+  
     
   
     workflow_id: str = Field(..., description="Unique workflow ID")
@@ -36,7 +36,7 @@ class AgentContext(BaseModel):
     class Config:
         use_enum_values = True
     
-    # ============== Public API ==============
+
     
     def set_data(self, key: str, value: Any) -> None:
         """Set shared data."""
@@ -91,8 +91,7 @@ class AgentContext(BaseModel):
     def clone(self) -> "AgentContext":
         """Create a copy of context."""
         return AgentContext(**self.dict())
-    
-    # ============== Private ==============
+
     
     def _update_timestamp(self) -> None:
         """Update the updated_at timestamp."""

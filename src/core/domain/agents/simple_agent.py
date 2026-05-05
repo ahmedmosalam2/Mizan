@@ -1,6 +1,6 @@
 from typing import Any
 from core.domain.agents.base import Agent
-from src.core.domain.entities.agent_helper import Task 
+from core.domain.entities.agent_helper import Task 
 
 class SimpleAgent(Agent):
     """Simple framework-agnostic agent adapter for Week‑1 tests."""

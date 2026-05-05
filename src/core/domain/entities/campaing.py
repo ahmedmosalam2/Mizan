@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional, Dict, List, Any
-from src.core.domain.entities.base import BaseEntity
+from core.domain.entities.base import BaseEntity
 from pydantic import BaseModel,Field
 from datetime import datetime
 
