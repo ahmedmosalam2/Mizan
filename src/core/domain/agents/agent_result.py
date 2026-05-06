@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field
 from enum import Enum
 from datetime import datetime
-
+from pydantic import ConfigDict
 
 class ResultStatus(str, Enum):
     """Status of agent execution."""
@@ -18,6 +18,7 @@ class AgentResult(BaseModel):
     """Unified result format from agent execution."""
     
     # Identification
+    model_config = ConfigDict(use_enum_values=True)
     agent_name: str = Field(..., description="Name of the agent that produced this result")
     task_id: str = Field(..., description="Unique ID of the task being executed")
     
@@ -45,8 +46,6 @@ class AgentResult(BaseModel):
     next_agent: Optional[str] = Field(default=None, description="Name of next agent to run")
     can_continue: bool = Field(default=True, description="Whether pipeline can continue")
     
-    class Config:
-        use_enum_values = True
 
 
 class AgentResultBuilder:

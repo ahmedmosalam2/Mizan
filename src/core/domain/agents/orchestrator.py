@@ -76,11 +76,11 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
         if context is None:
             context = AgentContext(
                 workflow_id=f"wf_{datetime.now().timestamp()}",
-                task_id=task.id if hasattr(task, 'id') else "task_1"
+                task_id=task.id or "task_1"
             )
         
         # Store initial task
-        context.set_data("initial_task", task.dict() if hasattr(task, 'dict') else str(task))
+        context.set_data("initial_task", task.model_dump() if hasattr(task, 'model_dump') else str(task))
         
         final_result = None
         
@@ -103,7 +103,7 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
             self._log_execution(agent_name, result)
             
             # Update context with result
-            context.set_data(f"agent_{agent_index}_result", result.dict())
+            context.set_data(f"agent_{agent_index}_result", result.model_dump())
             context.add_message(agent_name, "execution", {
                 "status": result.status,
                 "data": result.data,
@@ -146,7 +146,7 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
         if context is None:
             context = AgentContext(
                 workflow_id=f"wf_parallel_{datetime.now().timestamp()}",
-                task_id=task.id if hasattr(task, 'id') else "task_parallel"
+                task_id=task.id or "task_1"
             )
         
         # Execute all agents in parallel

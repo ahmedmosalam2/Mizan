@@ -1,7 +1,7 @@
 """Agent Context - Shared state and communication between agents."""
 
 from typing import Any, Dict, Optional, List
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from copy import deepcopy
 
@@ -33,9 +33,9 @@ class AgentContext(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     
-    class Config:
-        use_enum_values = True
-    
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True
+    )
 
     
     def set_data(self, key: str, value: Any) -> None:
