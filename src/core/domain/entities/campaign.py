@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, Dict, List, Any
 from core.domain.entities.base import BaseEntity
-from pydantic import BaseModel,Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 
 
@@ -9,13 +9,14 @@ class Market(str, Enum):
     SAUDI_ARABIA = "KSA"
     EGYPT = "EG"
 
-    
 
 class CampaignStatus(str, Enum):
+    PLANNING = "planning"
     ACTIVE = "active"
     INACTIVE = "inactive"
     DRAFT = "draft"
-
+    PAUSED = "paused"
+    COMPLETED = "completed"
 
 
 class Channel(str, Enum):
@@ -25,6 +26,9 @@ class Channel(str, Enum):
     TIKTOK = "tiktok"
     WHATSAPP = "whatsapp"
     SMS = "sms"
+    EMAIL = "email"
+
+
 class CampaignMetrics(BaseModel):
     roas: float = 0.0
     cpa: float = 0.0
@@ -34,6 +38,8 @@ class CampaignMetrics(BaseModel):
 
 
 class Campaign(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     id: str
     name: str
     market: Market
@@ -41,18 +47,15 @@ class Campaign(BaseModel):
     total_spend: float
     total_budget: float
     currency: str  # SAR or EGP
-    channel_allocations: Dict[Channel, float] = Field(default_factory=dict)
-    
+    channel_allocations: Dict[str, float] = Field(default_factory=dict)
+
     channels: List[Channel]
     target_audiences: List[str] = Field(default_factory=list)
     languages: List[str] = ["ar", "en"]
-    metrics: Dict[Channel, CampaignMetrics] = Field(default_factory=dict)
-    
-   
+    metrics: Dict[str, CampaignMetrics] = Field(default_factory=dict)
+
     consent_verified: bool = False
     pii_alerts_count: int = 0
-    
+
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-    class Config:
-        use_enum_values = True

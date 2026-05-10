@@ -15,7 +15,7 @@ from core.domain.agents.specialized_agents import (
     ExecutorAgent
 )
 from core.domain.entities.agent_helper import Task
-from core.domain.entities.campaing import Campaign, Market, CampaignStatus, Channel
+from core.domain.entities.campaign import Campaign, Market, CampaignStatus, Channel
 from core.use_cases.optimize_campaign_with_agents import (
     OptimizeCampaignWithAgentsUseCase,
     CampaignOptimizationPipeline

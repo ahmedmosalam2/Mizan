@@ -3,8 +3,8 @@ from typing import List, Optional, Dict, Any
 
 
 class VectorDBPort(ABC):
+    """Port for Vector Database operations (embeddings storage and similarity search)."""
 
-    
     @abstractmethod
     async def store_embedding(self, 
                             entity_id: str, 
@@ -12,16 +12,16 @@ class VectorDBPort(ABC):
                             text: str, 
                             embedding: list[float]) -> bool:
         """
-        احفظ embedding في الـ Vector DB
+        Store an embedding in the Vector DB.
         
         Args:
-            entity_id: معرّف الـ entity (campaign_id, task_id)
-            entity_type: نوع الـ entity ("campaign", "task", "content")
-            text: النص الأصلي
-            embedding: الـ vector
+            entity_id: Entity identifier (campaign_id, task_id)
+            entity_type: Entity type ("campaign", "task", "content")
+            text: Original text
+            embedding: The vector
             
         Returns:
-            True إذا نجح الحفظ
+            True if stored successfully
         """
         pass
     
@@ -31,40 +31,40 @@ class VectorDBPort(ABC):
                             entity_type: str,
                             limit: int = 5) -> List[Dict[str, Any]]:
         """
-        ابحث عن embeddings متشابهة
+        Search for similar embeddings.
         
         Args:
-            embedding: الـ query embedding
-            entity_type: نوع الـ entity للبحث فيه
-            limit: عدد النتائج
+            embedding: The query embedding
+            entity_type: Entity type to search within
+            limit: Number of results
             
         Returns:
-            قائمة بالنتائج (entity_id, score, text)
+            List of results (entity_id, score, text)
         """
         pass
     
     @abstractmethod
     async def delete_embedding(self, entity_id: str) -> bool:
         """
-        احذف embedding
+        Delete an embedding.
         
         Args:
-            entity_id: معرّف الـ entity
+            entity_id: Entity identifier
             
         Returns:
-            True إذا نجح الحذف
+            True if deleted successfully
         """
         pass
     
     @abstractmethod
     async def get_embedding(self, entity_id: str) -> Optional[Dict[str, Any]]:
         """
-        جيب embedding محفوظ
+        Get a stored embedding.
         
         Args:
-            entity_id: معرّف الـ entity
+            entity_id: Entity identifier
             
         Returns:
-            البيانات (embedding, text, metadata)
+            The data (embedding, text, metadata)
         """
         pass

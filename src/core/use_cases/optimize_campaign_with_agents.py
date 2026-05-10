@@ -21,7 +21,7 @@ from core.domain.agents.specialized_agents import (
     ExecutorAgent
 )
 from core.domain.entities.agent_helper import Task
-from core.domain.entities.campaing import Campaign
+from core.domain.entities.campaign import Campaign
 from core.ports.Campaign_Repository_Port import CampaignRepositoryPort
 from core.ports.llm_ports import LLMPort
 
@@ -145,8 +145,8 @@ class OptimizeCampaignWithAgentsUseCase:
             goal=f"Optimize campaign '{campaign.name}' for maximum ROI",
             context={
                 "name": campaign.name,
-                "market": campaign.market.value if hasattr(campaign.market, 'value') else str(campaign.market),
-                "channels": [c.value if hasattr(c, 'value') else str(c) for c in campaign.channels],
+                "market": campaign.market if isinstance(campaign.market, str) else campaign.market.value,
+                "channels": [c if isinstance(c, str) else c.value for c in campaign.channels],
                 "total_budget": campaign.total_budget,
                 "current_spend": campaign.total_spend,
                 "currency": campaign.currency,
@@ -154,7 +154,7 @@ class OptimizeCampaignWithAgentsUseCase:
             },
             constraints=[
                 f"budget_limit: {campaign.total_budget} {campaign.currency}",
-                f"approved_channels: {', '.join([c.value if hasattr(c, 'value') else str(c) for c in campaign.channels])}",
+                f"approved_channels: {', '.join([c if isinstance(c, str) else c.value for c in campaign.channels])}",
                 f"target_audience: {', '.join(campaign.target_audiences)}",
                 f"languages: {', '.join(campaign.languages)}"
             ],
@@ -167,14 +167,14 @@ class OptimizeCampaignWithAgentsUseCase:
             workflow_id=f"optimize_{campaign.id}_{datetime.now().timestamp()}",
             task_id=f"task_{campaign.id}",
             campaign_id=campaign.id,
-            market=campaign.market.value
+            market=campaign.market if isinstance(campaign.market, str) else campaign.market.value
         )
         
         # Add campaign data to context
-        context.set_data("campaign", campaign.dict())
+        context.set_data("campaign", campaign.model_dump())
         context.set_data("current_spend", campaign.total_spend)
         context.set_data("total_budget", campaign.total_budget)
-        context.set_data("channels", [c.value for c in campaign.channels])
+        context.set_data("channels", [c if isinstance(c, str) else c.value for c in campaign.channels])
         
         return context
     

@@ -90,7 +90,7 @@ class AgentContext(BaseModel):
     
     def clone(self) -> "AgentContext":
         """Create a copy of context."""
-        return AgentContext(**self.dict())
+        return AgentContext(**self.model_dump())
 
     
     def _update_timestamp(self) -> None:

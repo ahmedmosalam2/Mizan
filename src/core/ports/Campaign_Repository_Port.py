@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from core.domain.entities.campaing import Campaign
+from core.domain.entities.campaign import Campaign
 
 
 class CampaignRepositoryPort(ABC):

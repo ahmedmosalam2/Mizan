@@ -358,8 +358,8 @@ class TestOrchestrationIntegration:
         # Mock LLM
         llm_port = AsyncMock()
         llm_port.generate.side_effect = [
-            '{"insights": [], "data_quality": 85, "recommendations": []}',  # Analysis
-            '{"actions": [], "estimated_improvement": 30, "priority": "high", "implementation_steps": []}',  # Optimization
+            '{"insights": [], "data_quality": 85, "recommendations": []}', 
+            '{"actions": [], "estimated_improvement": 30, "priority": "high", "implementation_steps": []}',  
         ]
         
         # Mock executor
