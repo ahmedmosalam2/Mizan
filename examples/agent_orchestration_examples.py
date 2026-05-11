@@ -4,6 +4,14 @@ import asyncio
 from typing import Any, Dict, Optional
 from unittest.mock import AsyncMock, MagicMock
 import json
+import os
+from dotenv import load_dotenv
+
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent / "src"))
+
+from adapters.driven.llm.groq_adapter import GroqAdapter
 
 # Imports
 from core.domain.agents.orchestrator import SerialAgentOrchestrator
@@ -20,6 +28,15 @@ from core.use_cases.optimize_campaign_with_agents import (
     OptimizeCampaignWithAgentsUseCase,
     CampaignOptimizationPipeline
 )
+
+def get_llm_port():
+    load_dotenv()
+    api_key = os.getenv("GROQ_API_KEY")
+    if api_key and api_key.startswith('"') and api_key.endswith('"'):
+        api_key = api_key[1:-1]
+    if api_key and api_key != "your_groq_api_key_here":
+        return GroqAdapter(api_key=api_key)
+    return MockLLMPort()
 
 
 class MockLLMPort:
@@ -130,7 +147,7 @@ async def example_1_basic_orchestration():
     print("="*70)
     
     # Setup
-    llm_port = MockLLMPort()
+    llm_port = get_llm_port()
     executor_port = MockExecutorPort()
     
     # Create agents
@@ -142,7 +159,7 @@ async def example_1_basic_orchestration():
     # Create task
     task = Task(
         goal="Optimize campaign for maximum ROI",
-        context="Marketing campaign optimization",
+        context={"description": "Marketing campaign optimization"},
         constraints=["budget_limit: 100000 SAR"],
         expected_output="Optimization plan with actions and expected ROI"
     )
@@ -190,7 +207,7 @@ async def example_2_parallel_analysis():
     print("="*70)
     
     # Setup
-    llm_port = MockLLMPort()
+    llm_port = get_llm_port()
     
     # Create multiple analysis agents
     agents = [
@@ -200,7 +217,7 @@ async def example_2_parallel_analysis():
     # Create task
     task = Task(
         goal="Analyze multiple campaigns",
-        context="Parallel analysis of campaign performance",
+        context={"description": "Parallel analysis of campaign performance"},
         constraints=["Complete within timeout"],
         expected_output="Analysis results for each campaign"
     )
@@ -215,43 +232,41 @@ async def example_2_parallel_analysis():
         task=task
     )
     
-    # Print results
-    print(f"\n✅ Parallel Execution Complete!")
+
+    print(f"\n Parallel Execution Complete!")
     print(f"Results: {len(results)} agents executed")
     for agent_name, result in results.items():
         print(f"  - {agent_name}: {result.status} ({result.execution_time_ms:.2f}ms)")
 
 
 async def example_3_complete_use_case():
-    """Example 3: Complete use case with repository."""
+
     print("\n" + "="*70)
     print("EXAMPLE 3: Complete Campaign Optimization Use Case")
     print("="*70)
     
     # Setup
     campaign_repo = MockCampaignRepository()
-    llm_port = MockLLMPort()
+    llm_port = get_llm_port()
     executor_port = MockExecutorPort()
-    
-    # Create sample campaign
+
     campaign = campaign_repo.create_sample_campaign()
     print(f"\n📊 Campaign: {campaign.name}")
     print(f"   Market: {campaign.market}")
     print(f"   Budget: {campaign.total_budget} {campaign.currency}")
-    print(f"   Channels: {', '.join([c.value for c in campaign.channels])}")
-    
-    # Create use case
+    print(f"   Channels: {', '.join([str(c) for c in campaign.channels])}")
+
     use_case = OptimizeCampaignWithAgentsUseCase(
         campaign_repo=campaign_repo,
         llm_port=llm_port,
         executor_port=executor_port
     )
     
-    # Execute optimization
-    print(f"\n🚀 Starting campaign optimization...")
+
+    print(f"\n Starting campaign optimization...")
     result = await use_case.execute(campaign.id)
     
-    # Print results
+
     print(f"\n✅ Optimization Complete!")
     print(f"Status: {result.status}")
     print(f"Execution Time: {result.execution_time_ms:.2f}ms")
@@ -284,7 +299,7 @@ async def example_4_error_handling():
     # Create task
     task = Task(
         goal="Analyze campaign",
-        context="Test error handling",
+        context={"description": "Test error handling"},
         constraints=[],
         expected_output="Analysis results"
     )
@@ -331,7 +346,7 @@ async def example_5_custom_validation():
         return True
     
     # Setup
-    llm_port = MockLLMPort()
+    llm_port = get_llm_port()
     executor_port = MockExecutorPort()
     
     validation_rules = {
@@ -348,7 +363,7 @@ async def example_5_custom_validation():
     # Create task
     task = Task(
         goal="Optimize with strict rules",
-        context="Testing custom validation",
+        context={"description": "Testing custom validation"},
         constraints=["roi_improvement >= 20%", "action_amount <= 10000"],
         expected_output="Validated plan"
     )

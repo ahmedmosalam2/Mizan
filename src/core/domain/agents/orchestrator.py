@@ -83,6 +83,7 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
         context.set_data("initial_task", task.model_dump() if hasattr(task, 'model_dump') else str(task))
         
         final_result = None
+        pipeline_start = time.time()
         
         for agent_index, agent in enumerate(agents):
             # Check if we should stop
@@ -118,6 +119,11 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
             # Update task for next agent
             if result.data:
                 task = self._prepare_next_task(task, result)
+        
+        # Set total pipeline time on the final result
+        if final_result:
+            total_time = (time.time() - pipeline_start) * 1000
+            final_result.execution_time_ms = total_time
         
         return final_result or self._create_empty_result("Orchestrator", context.task_id)
     
@@ -193,7 +199,7 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
                 start_time = time.time()
                 
                 # Execute agent
-                result_data = await agent.execute(task)
+                result_data = await agent.execute(task, context)
                 
                 execution_time_ms = (time.time() - start_time) * 1000
                 

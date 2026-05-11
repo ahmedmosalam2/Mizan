@@ -3,10 +3,21 @@
 from typing import Any, Dict, List, Optional
 from abc import abstractmethod
 import time
+import re
+import json
 
 from core.domain.agents.base import Agent
 from core.domain.agents.agent_context import AgentContext
 from core.domain.entities.agent_helper import Task
+
+
+def _extract_json(text: str) -> Dict[str, Any]:
+    """Extract JSON from LLM response, stripping markdown code blocks if present."""
+    cleaned = text.strip()
+    match = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', cleaned, re.DOTALL)
+    if match:
+        cleaned = match.group(1).strip()
+    return json.loads(cleaned)
 
 
 class AnalysisAgent(Agent):
@@ -89,11 +100,9 @@ class AnalysisAgent(Agent):
     
     def _parse_analysis(self, result: str) -> Dict[str, Any]:
         """Parse LLM analysis result."""
-        import json
         try:
-            return json.loads(result)
+            return _extract_json(result)
         except:
-            # Fallback if parsing fails
             return {
                 "insights": [result],
                 "data_quality": 50,
@@ -177,9 +186,8 @@ class OptimizationAgent(Agent):
     
     def _parse_recommendations(self, result: str) -> Dict[str, Any]:
         """Parse optimization recommendations."""
-        import json
         try:
-            return json.loads(result)
+            return _extract_json(result)
         except:
             return {
                 "actions": [result],

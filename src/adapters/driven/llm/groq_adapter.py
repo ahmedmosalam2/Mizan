@@ -23,8 +23,7 @@ class GroqAdapter(LLMPort):
         return response.choices[0].message.content
 
     async def embed(self, text: str) -> list[float]:
-        # Groq doesn't provide embeddings directly yet, so we return dummy data for now
-        # You can later connect this to a free HuggingFace embeddings API
+
         return [0.0] * 768
 
     def count_tokens(self, text: str) -> int:
