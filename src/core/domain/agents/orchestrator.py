@@ -1,10 +1,8 @@
-"""Agent Orchestrator - Controls and coordinates multiple agents."""
 
 from typing import List, Dict, Optional, Callable, Any
 from abc import ABC, abstractmethod
 import time
 from datetime import datetime
-
 from core.domain.agents.base import Agent
 from core.domain.agents.agent_result import AgentResult, AgentResultBuilder
 from core.domain.agents.agent_context import AgentContext
@@ -61,7 +59,7 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
         Each agent receives the context, executes, and passes results to next agent.
         If an agent fails, execution stops.
         
-        Args:
+        Args:  
             agents: List of agents to execute in order
             task: Initial task
             context: Shared context between agents
@@ -78,13 +76,11 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
                 workflow_id=f"wf_{datetime.now().timestamp()}",
                 task_id=task.id or "task_1"
             )
-        
         # Store initial task
         context.set_data("initial_task", task.model_dump() if hasattr(task, 'model_dump') else str(task))
-        
         final_result = None
         pipeline_start = time.time()
-        
+
         for agent_index, agent in enumerate(agents):
             # Check if we should stop
             if context.should_stop():
@@ -120,12 +116,13 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
             if result.data:
                 task = self._prepare_next_task(task, result)
         
-        # Set total pipeline time on the final result
+       
         if final_result:
             total_time = (time.time() - pipeline_start) * 1000
             final_result.execution_time_ms = total_time
         
         return final_result or self._create_empty_result("Orchestrator", context.task_id)
+    
     
     async def orchestrate_parallel(self,
                                    agents: List[Agent],
@@ -147,15 +144,14 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
         """
         if not agents:
             raise ValueError("At least one agent is required")
-        
-        # Initialize context if not provided
+      
         if context is None:
             context = AgentContext(
                 workflow_id=f"wf_parallel_{datetime.now().timestamp()}",
                 task_id=task.id or "task_1"
             )
         
-        # Execute all agents in parallel
+
         import asyncio
         
         tasks = [
@@ -164,8 +160,7 @@ class SerialAgentOrchestrator(AgentOrchestratorPort):
         ]
         
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        # Map results to agent names
+   
         result_dict = {}
         for agent, result in zip(agents, results):
             agent_name = agent.__class__.__name__
