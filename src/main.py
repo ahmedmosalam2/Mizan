@@ -21,12 +21,12 @@ from adapters.driving.api.routes.agents import router as agents_router
 async def lifespan(app: FastAPI):
     """Startup / shutdown hooks."""
     # ── Startup ────────────────────────────────────────────────
-    print("🚀 Mizan API starting up ...")
+    print("[*] Mizan API starting up ...")
     await init_db()
-    print("✅ Database tables created / verified")
+    print("[+] Database tables created / verified")
     yield
     # ── Shutdown ───────────────────────────────────────────────
-    print("🛑 Mizan API shutting down ...")
+    print("[*] Mizan API shutting down ...")
     await close_db()
 
 

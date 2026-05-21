@@ -6,7 +6,7 @@ load_dotenv()
 class Config:
     """Application configuration."""
     
-    # Database - async PostgreSQL via asyncpg
+    # Database - supports both PostgreSQL (production) and SQLite (dev fallback)
     DATABASE_URL = os.getenv(
         "DATABASE_URL",
         "postgresql+asyncpg://mizan_user:mizan_secure_pass_2026@localhost:5432/mizan_campaigns"
@@ -15,6 +15,11 @@ class Config:
     # Ensure the URL uses the async driver
     if DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+    # SQLite fallback for development (when PostgreSQL isn't available)
+    SQLITE_FALLBACK = os.getenv("SQLITE_FALLBACK", "false").lower() == "true"
+    if SQLITE_FALLBACK:
+        DATABASE_URL = "sqlite+aiosqlite:///./mizan_dev.db"
     
     # API
     API_HOST = os.getenv("API_HOST", "0.0.0.0")

@@ -13,7 +13,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U mizan_user -d mizan_campaigns"]
       interval: 10s
@@ -31,4 +30,4 @@ services:
       - postgres
 
 volumes:
-  postgres_data
+  postgres_data:

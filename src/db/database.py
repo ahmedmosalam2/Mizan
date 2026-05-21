@@ -1,8 +1,4 @@
-"""
-Async SQLAlchemy database engine and session management.
 
-Uses asyncpg driver for PostgreSQL.
-"""
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -18,14 +14,20 @@ class Base(DeclarativeBase):
     pass
 
 
-# ── Engine & session factory (created once at import time) ─────────
-engine = create_async_engine(
-    Config.DATABASE_URL,
-    echo=Config.DEBUG,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-)
+# ── Engine configuration ──────────────────────────────────────────
+_engine_kwargs = {
+    "echo": Config.DEBUG,
+    "pool_pre_ping": True,
+}
+
+# SQLite doesn't support pool_size / max_overflow
+if not Config.DATABASE_URL.startswith("sqlite"):
+    _engine_kwargs.update({
+        "pool_size": 10,
+        "max_overflow": 20,
+    })
+
+engine = create_async_engine(Config.DATABASE_URL, **_engine_kwargs)
 
 async_session_factory = async_sessionmaker(
     engine,

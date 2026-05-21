@@ -1,8 +1,3 @@
-"""
-SQLAlchemy ORM models for PostgreSQL.
-
-Maps domain entities to database tables.
-"""
 import uuid
 from datetime import datetime
 from typing import Optional
