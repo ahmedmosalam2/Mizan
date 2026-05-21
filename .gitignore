@@ -1,1 +1,24 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
 .env
+.venv/
+venv/
+env/
+
+# Databases
+*.db
+campaigns.db
+
+# Local outputs & logs
+outputs/
+logs/
+*.log
+
+# Editor configs
+.vscode/
+.idea/
