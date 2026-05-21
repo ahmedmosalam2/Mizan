@@ -22,5 +22,77 @@
     },
     "cost_usd": 4.8299999999999995e-05,
     "cached_at": 1779405748.8807068
+  },
+  "e27c585b7e45fd8c6da611db068072e0": {
+    "text": "## إعلان Meta Carousel — قلاية فيلبس\n\n**العنوان (40 حرف):** إفطار صحي مع فيلبس 🌙\n**الوصف (125 حرف):** قلاية هوائية XXL سعة 7 لتر. وجبات مقرمشة بدون زيت لعائلتك في رمضان. 899 ريال مع توصيل مجاني.\n**CTA:** اطلبي الآن\n**Body:** استمتعي بإعداد أشهى المقبلات والأطباق الرمضانية بتقنية Rapid Air من فيلبس. قلاية فيلبس الهوائية XXL تقدم لك طبخ صحي بدون زيت، شاشة رقمية سهلة الاستخدام، وسعة 7 لتر تكفي العائلة كلها. أجزاء آمنة للغسالة — تنظيف سهل بعد الإفطار!",
+    "provider": "mock",
+    "model": "mock-deterministic",
+    "tokens": {
+      "input": 174,
+      "output": 102,
+      "total": 276
+    },
+    "cost_usd": 3.4920000000000004e-05,
+    "cached_at": 1779406860.7495747
+  },
+  "044dce191b07ddae60b72a6ba15f933d": {
+    "text": "{\n    \"detected_pii\": {\n        \"saudi_national_id\": [\"1087654321\"],\n        \"iqama_number\": [\"2198765432\"],\n        \"egyptian_national_id\": [\"29901151234567\"],\n        \"phone_numbers\": [\"0551234567\", \"01012345678\", \"01098765432\"],\n        \"email_addresses\": [\"mohammed.g@email.com\", \"fatma.h@email.com\"],\n        \"person_names\": [\"محمد عبدالله الغامدي\", \"فاطمة أحمد حسن\"],\n        \"addresses\": [\"شارع الملك فهد، حي العليا، الرياض 12211\", \"15 شارع التحرير، الدقي، الجيزة\"]\n    },\n    \"redacted_text\": \"العميل [REDACTED_NAME]، رقم الهوية [REDACTED_SAUDI_ID]، رقم الجوال [REDACTED_PHONE]، البريد الإلكتروني [REDACTED_EMAIL]، يطلب تقسيط عبر تمارا لشراء iPhone 15 Pro Max بمبلغ 5,199 ريال. عنوان التوصيل: [REDACTED_ADDRESS]. رقم الإقامة [REDACTED_IQAMA].\\n\\nالعميلة [REDACTED_NAME]، رقم البطاقة [REDACTED_EGYPTIAN_ID]، موبايل [REDACTED_PHONE]، إيميل [REDACTED_EMAIL]، عايزة تدفع بفوري لشراء Samsung Galaxy S24 بسعر 38,999 جنيه. العنوان: [REDACTED_ADDRESS]. رقم فودافون كاش [REDACTED_PHONE].\",\n    \"jurisdiction\": {\n        \"saudi_pdpl\": \"Applied — SDAIA data residency check, consent verification required\",\n        \"egypt_law_151\": \"Applied — PDPC license required for marketing, Arabic consent mandatory\"\n    },\n    \"compliance_notes\": \"PDPL Saudi: National IDs classified as sensitive data. Egypt Law 151: 3-year consent retention required.\"\n}",
+    "provider": "mock",
+    "model": "mock-deterministic",
+    "tokens": {
+      "input": 195,
+      "output": 171,
+      "total": 366
+    },
+    "cost_usd": 5.273999999999999e-05,
+    "cached_at": 1779406860.9381242
+  },
+  "3b68162ef2d0423cdb6b513fdfd2829d": {
+    "text": "# تحليل إعادة تخصيص الميزانية\n\n## التوصية\n- **من:** Snapchat (ROAS: 1.1x — أقل من عتبة 2x)\n- **إلى:** Meta Ads (ROAS: 8.2x — الأعلى أداءً)\n- **المبلغ:** 5,000 ريال (50% من ميزانية Snapchat)\n\n## تجاوز العتبة — يتطلب موافقة\nالنسبة 50% تتجاوز حد الـ 20% threshold للتخصيص التلقائي.\n⏸️ **مطلوب موافقة Marketing Manager**\n\n## قرار الموافقة\n✅ **تمت الموافقة** من Marketing Manager\n📝 **ملاحظات:** \"موافق. كمان زيادة ميزانية WhatsApp بـ 2,000 ريال من Snapchat\"\n\n## التخصيص المحدّث\n| القناة | قبل | بعد | التغيير |\n|--------|------|------|---------|\n| Meta Ads | 15,000 | 20,000 | +5,000 |\n| Snapchat | 10,000 | 3,000 | -7,000 |\n| WhatsApp | 5,000 | 7,000 | +2,000 |",
+    "provider": "mock",
+    "model": "mock-deterministic",
+    "tokens": {
+      "input": 192,
+      "output": 150,
+      "total": 342
+    },
+    "cost_usd": 4.752e-05,
+    "cached_at": 1779406861.1378264
+  },
+  "62ef360044ad46a550d76400b46570d0": {
+    "text": "أهلاً بك مرة أخرى! 👋\n\nتذكرت محادثتنا السابقة — كنت مهتم بـ **قلاية فيلبس الهوائية XXL** باللون **الأبيض**.\n\nالعرض لا يزال ساري:\n- السعر بعد خصم رمضان 15%: **764 ريال** (بدلاً من 899 ريال)\n- اللون الأبيض متوفر في فرع **الرياض**\n- التوصيل مجاني خلال رمضان 🚚\n\nتحب أكمل الطلب لك الآن؟",
+    "provider": "mock",
+    "model": "mock-deterministic",
+    "tokens": {
+      "input": 181,
+      "output": 67,
+      "total": 248
+    },
+    "cost_usd": 2.6939999999999996e-05,
+    "cached_at": 1779406861.3248658
+  },
+  "fca641e5c36b8824bfdc091f2aa96465": {
+    "text": "# تقرير نشر الحملة\n\n## النتائج\n| القناة | السوق | الحالة | التفاصيل |\n|--------|-------|--------|----------|\n| Meta Ads | KSA | ✅ نجح | Campaign ID: meta_ksa_001 |\n| Meta Ads | EG | ✅ نجح | Campaign ID: meta_eg_001 |\n| Snapchat | KSA | ⚠️ إعادة محاولة | API_RATE_LIMIT — retry 1 فشل، retry 2 نجح |\n| Google Ads | KSA | ✅ نجح | Campaign ID: gads_ksa_001 |\n| WhatsApp | KSA | ❌ فشل → بديل SMS | TEMPLATE_REJECTED — fallback to Unifonic SMS ✅ |\n| Email | EG | ✅ نجح | HubSpot campaign sent |\n\n## ملخص\n- إجمالي القنوات: 6\n- نجح: 4 مباشرة + 1 بعد retry + 1 fallback = 6/6\n- Retry: Snapchat (محاولتين)\n- Fallback: WhatsApp → SMS",
+    "provider": "mock",
+    "model": "mock-deterministic",
+    "tokens": {
+      "input": 153,
+      "output": 171,
+      "total": 324
+    },
+    "cost_usd": 5.022e-05,
+    "cached_at": 1779406861.52445
+  },
+  "23650ed1be5f4d540027977cce9a4923": {
+    "text": "## إعلان Meta Carousel — قلاية فيلبس\n\n**العنوان (40 حرف):** إفطار صحي مع فيلبس 🌙\n**الوصف (125 حرف):** قلاية هوائية XXL سعة 7 لتر. وجبات مقرمشة بدون زيت لعائلتك في رمضان. 899 ريال مع توصيل مجاني.\n**CTA:** اطلبي الآن\n**Body:** استمتعي بإعداد أشهى المقبلات والأطباق الرمضانية بتقنية Rapid Air من فيلبس. قلاية فيلبس الهوائية XXL تقدم لك طبخ صحي بدون زيت، شاشة رقمية سهلة الاستخدام، وسعة 7 لتر تكفي العائلة كلها. أجزاء آمنة للغسالة — تنظيف سهل بعد الإفطار!",
+    "provider": "mock",
+    "model": "mock-deterministic",
+    "tokens": {
+      "input": 135,
+      "output": 102,
+      "total": 237
+    },
+    "cost_usd": 3.2579999999999996e-05,
+    "cached_at": 1779406861.7375221
   }
 }
