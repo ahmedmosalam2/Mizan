@@ -1,8 +1,4 @@
-"""
-Mizan - AI-Powered Campaign Management Platform for MENA E-Commerce.
 
-FastAPI application entry point.
-"""
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,27 +6,25 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db.database import init_db, close_db
 
-# ── Routes ─────────────────────────────────────────────────────────
+
 from adapters.driving.api.routes.health import router as health_router
 from adapters.driving.api.routes.campaigns import router as campaigns_router
 from adapters.driving.api.routes.agents import router as agents_router
+from adapters.driving.api.routes.benchmark import router as benchmark_router
 
 
 # ── Lifecycle ──────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup / shutdown hooks."""
-    # ── Startup ────────────────────────────────────────────────
+ 
     print("[*] Mizan API starting up ...")
     await init_db()
     print("[+] Database tables created / verified")
     yield
-    # ── Shutdown ───────────────────────────────────────────────
+
     print("[*] Mizan API shutting down ...")
     await close_db()
-
-
-# ── App ────────────────────────────────────────────────────────────
 app = FastAPI(
     title="Mizan",
     description=(
@@ -54,6 +48,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(campaigns_router)
 app.include_router(agents_router)
+app.include_router(benchmark_router)
 
 
 # ── Run directly ───────────────────────────────────────────────────
