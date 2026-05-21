@@ -20,6 +20,16 @@ class FlowiseAdapter(BaseFrameworkAdapter):
 
     async def _call_chatflow(self, chatflow_id: str, question: str) -> tuple:
         import httpx
+        
+        # Fallback to central LLM Gateway if Flowise is not configured locally
+        if not self.api_key or "localhost" in self.base_url:
+            start = time.time()
+            try:
+                text = await self.call_llm_gateway(question)
+                return text, (time.time() - start) * 1000
+            except Exception as e:
+                return f"Gateway fallback error: {e}", (time.time() - start) * 1000
+
         url = f"{self.base_url}/api/v1/prediction/{chatflow_id}"
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         start = time.time()

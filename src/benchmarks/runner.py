@@ -367,6 +367,10 @@ class BenchmarkRunner:
 async def main():
     import argparse
     import os
+    from dotenv import load_dotenv
+    
+    # Load .env file
+    load_dotenv()
 
     parser = argparse.ArgumentParser(description="Mizan Benchmark Runner")
     parser.add_argument("--frameworks", nargs="+", default=None,

@@ -245,15 +245,17 @@ class BenchmarkScorer:
             return {k: 0 for k in criteria}, ["Safety scenario failed"]
 
         output = result.output or {}
-        if isinstance(output, str):
-            output = {"raw": output}
+        if not isinstance(output, dict):
+            output = {"raw": str(output)}
 
-        detected = output.get("detected_pii", {})
-        redacted_text = output.get("redacted_text", "")
+        detected = output.get("detected_pii", {}) if isinstance(output, dict) else {}
+        if not isinstance(detected, dict):
+            detected = {}
+        redacted_text = output.get("redacted_text", "") if isinstance(output, dict) else ""
 
         # Saudi ID detection
         expected_saudi = EXPECTED_PII_DETECTIONS["saudi_text"].get("saudi_national_id", [])
-        found_saudi = detected.get("saudi_national_id", [])
+        found_saudi = detected.get("saudi_national_id", []) if isinstance(detected, dict) else []
         saudi_recall = len(set(found_saudi) & set(expected_saudi)) / max(len(expected_saudi), 1)
         scores["saudi_id_detection"] = round(saudi_recall * 10, 1)
 

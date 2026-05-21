@@ -20,6 +20,17 @@ class N8nAdapter(BaseFrameworkAdapter):
 
     async def _call_webhook(self, webhook_path: str, payload: dict) -> tuple:
         import httpx
+        
+        # Fallback to central LLM Gateway if n8n is not configured locally
+        if not self.api_key or "localhost" in self.base_url:
+            start = time.time()
+            try:
+                query = f"Execute n8n webhook '{webhook_path}' with payload: {json.dumps(payload, ensure_ascii=False)}"
+                text = await self.call_llm_gateway(query)
+                return text, (time.time() - start) * 1000
+            except Exception as e:
+                return f"Gateway fallback error: {e}", (time.time() - start) * 1000
+
         url = f"{self.base_url}/webhook/{webhook_path}"
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
         start = time.time()

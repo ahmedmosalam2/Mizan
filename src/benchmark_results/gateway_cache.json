@@ -1,0 +1,26 @@
+{
+  "22b19632085ec469c9f9bbc658e39dfd": {
+    "text": "The provided text contains personally identifiable information (PII) for two individuals. Here's the detected PII and redacted text in JSON format:\n\n```json\n{\n  \"detected_pii\": [\n    {\n      \"name\": \"محمد عبدالله الغامدي\",\n      \"id_number\": \"1087654321\",\n      \"phone_number\": \"0551234567\",\n      \"email\": \"mohammed.g@email.com\",\n      \"address\": \"شارع الملك فهد، حي العليا، الرياض 12211\",\n      \"residence_number\": \"2198765432\"\n    },\n    {\n      \"name\": \"فاطمة أحمد حسن\",\n      \"id_number\": \"29901151234567\",\n      \"phone_number\": \"01012345678\",\n      \"email\": \"fatma.h@email.com\",\n      \"address\": \"15 شارع التحرير، الدقي، الجيزة\",\n      \"vodafone_cash_number\": \"01098765432\"\n    }\n  ],\n  \"redacted_text\": \"العميل *****، رقم الهوية *****، رقم الجوال *****، البريد الإلكتروني *****، يطلب تقسيط عبر تمارا لشراء iPhone 15 Pro Max بمبلغ 5,199 ريال. عنوان التوصيل: *****. رقم الإقامة *****.\\nالعميلة *****، رقم البطاقة *****، موبايل *****، إيميل *****، عايزة تدفع بفوري لشراء Samsung Galaxy S24 بسعر 38,999 جنيه. العنوان: *****. رقم فودافون كاش *****.\"\n}\n```\n\nNote that the redacted text replaces all PII with asterisks (\\*) to protect the individuals' sensitive information.",
+    "provider": "groq",
+    "model": "llama-3.3-70b-versatile",
+    "tokens": {
+      "input": 237,
+      "output": 362,
+      "total": 599
+    },
+    "cost_usd": 0.00042581,
+    "cached_at": 1779402520.3184636
+  },
+  "70d972c75300262d5fd425690e53549f": {
+    "text": "# تحليل إعادة تخصيص الميزانية\n\n## التوصية\n- **من:** Snapchat (ROAS: 1.1x — أقل من عتبة 2x)\n- **إلى:** Meta Ads (ROAS: 8.2x — الأعلى أداءً)\n- **المبلغ:** 5,000 ريال (50% من ميزانية Snapchat)\n\n## تجاوز العتبة — يتطلب موافقة\nالنسبة 50% تتجاوز حد الـ 20% threshold للتخصيص التلقائي.\n⏸️ **مطلوب موافقة Marketing Manager**\n\n## قرار الموافقة\n✅ **تمت الموافقة** من Marketing Manager\n📝 **ملاحظات:** \"موافق. كمان زيادة ميزانية WhatsApp بـ 2,000 ريال من Snapchat\"\n\n## التخصيص المحدّث\n| القناة | قبل | بعد | التغيير |\n|--------|------|------|---------|\n| Meta Ads | 15,000 | 20,000 | +5,000 |\n| Snapchat | 10,000 | 3,000 | -7,000 |\n| WhatsApp | 5,000 | 7,000 | +2,000 |",
+    "provider": "mock",
+    "model": "mock-deterministic",
+    "tokens": {
+      "input": 205,
+      "output": 150,
+      "total": 355
+    },
+    "cost_usd": 4.8299999999999995e-05,
+    "cached_at": 1779405748.8807068
+  }
+}

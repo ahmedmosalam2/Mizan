@@ -290,6 +290,43 @@ class BaseFrameworkAdapter(ABC):
     # Utility Methods (shared by all adapters)
     # ═══════════════════════════════════════════════════════════════
 
+    async def call_llm_gateway(
+        self,
+        prompt: str,
+        scenario: Optional[str] = None,
+        system_instruction: str = "",
+        provider: Optional[str] = None,
+        model: Optional[str] = None,
+    ) -> str:
+        """
+        Call the centralized LLM Gateway middleware.
+        Provides caching, multi-provider failover, and automatic token tracking.
+        """
+        from core.services.llm_gateway import LLMGateway, GatewayChatRequest
+
+        if not hasattr(self, "_gateway"):
+            self._gateway = LLMGateway()
+
+        request = GatewayChatRequest(
+            prompt=prompt,
+            scenario=scenario,
+            system_instruction=system_instruction,
+            provider=provider or self.config.get("provider"),
+            model=model or self.config.get("model"),
+        )
+
+        response = await self._gateway.chat(request)
+
+        # Track tokens automatically
+        self.update_tokens(
+            prompt=response.tokens.get("input", 0),
+            completion=response.tokens.get("output", 0),
+            model=response.model,
+        )
+        self._token_usage.estimated_cost_usd += response.cost_usd
+
+        return response.text
+
     def add_trace(self, entry: TraceEntry) -> None:
         """Add an entry to the execution trace."""
         if not entry.timestamp:

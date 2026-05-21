@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from adapters.driving.api.routes.benchmark import router as benchmark_router
+from adapters.driving.api.routes.llm_gateway import router as llm_gateway_router
 
 
 app = FastAPI(
@@ -24,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(benchmark_router)
+app.include_router(llm_gateway_router)
 
 
 @app.get("/")

@@ -30,10 +30,22 @@ class CrewaiAdapter(BaseFrameworkAdapter):
     async def setup(self, llm_config: Dict[str, Any]) -> None:
         """Initialize CrewAI with LLM configuration."""
         try:
+            import os
             from crewai import LLM
+            
+            kwargs = {}
+            gateway_url = os.getenv("LLM_GATEWAY_URL")
+            model_str = f"{llm_config['provider']}/{llm_config['model']}"
+            
+            if gateway_url:
+                kwargs["base_url"] = gateway_url
+                # Tell litellm to parse the response as standard OpenAI completions
+                model_str = f"openai/{llm_config['model']}"
+
             self.llm = LLM(
-                model=f"{llm_config['provider']}/{llm_config['model']}",
-                api_key=llm_config.get("api_key", ""),
+                model=model_str,
+                api_key=llm_config.get("api_key", "") or "mock_key",
+                **kwargs
             )
             self._is_setup = True
             self.add_trace(TraceEntry(
@@ -123,15 +135,17 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             "hierarchical": Process.hierarchical,
         }
 
-        crew = Crew(
-            agents=crewai_agents,
-            tasks=[main_task],
-            process=process_map.get(orchestration_mode, Process.sequential),
-            verbose=True,
-        )
+        crew_kwargs = {
+            "agents": crewai_agents,
+            "tasks": [main_task],
+            "process": process_map.get(orchestration_mode, Process.sequential),
+            "verbose": True,
+        }
 
         if orchestration_mode == "hierarchical":
-            crew.manager_llm = self.llm
+            crew_kwargs["manager_llm"] = self.llm
+
+        crew = Crew(**crew_kwargs)
 
         start = time.time()
         result = crew.kickoff()

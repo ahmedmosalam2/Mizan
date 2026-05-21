@@ -107,6 +107,27 @@ python -m benchmarks.runner
 python -m benchmarks.runner --frameworks crewai --llm-model llama-3.3-70b-versatile
 ```
 
+### 3.5 Bypassing Rate Limits (LLM Gateway)
+
+To avoid Groq's Tokens Per Minute (TPM) limits during complex multi-agent benchmark runs, you can route all LLM calls through the built-in **LLM Gateway Middleware**:
+
+1. Start the LLM Gateway server:
+   ```bash
+   cd src
+   python -m uvicorn main:app --host 127.0.0.1 --port 8085 --reload
+   ```
+
+2. Run the benchmarks with the `LLM_GATEWAY_URL` environment variable:
+   ```bash
+   # On Windows PowerShell:
+   $env:LLM_GATEWAY_URL="http://127.0.0.1:8085/api/v1/llm"
+   py -3.10 -m benchmarks.runner --frameworks crewai
+
+   # On Linux/WSL/macOS:
+   LLM_GATEWAY_URL="http://127.0.0.1:8085/api/v1/llm" python -m benchmarks.runner --frameworks crewai
+   ```
+   This activates prompt caching (extremely fast subsequent runs), multi-provider failover, and metrics tracking!
+
 ### 4. View Results
 
 ```bash

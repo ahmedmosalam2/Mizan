@@ -21,6 +21,16 @@ class DifyAdapter(BaseFrameworkAdapter):
     async def _call_app(self, query: str, app_key: str = None) -> tuple:
         import httpx
         key = app_key or self.api_key
+        
+        # Fallback to central LLM Gateway if Dify is not configured locally
+        if not key or "localhost" in self.base_url:
+            start = time.time()
+            try:
+                text = await self.call_llm_gateway(query)
+                return text, (time.time() - start) * 1000
+            except Exception as e:
+                return f"Gateway fallback error: {e}", (time.time() - start) * 1000
+
         url = f"{self.base_url}/chat-messages"
         headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
         payload = {"inputs": {}, "query": query, "response_mode": "blocking", "user": "benchmark"}
