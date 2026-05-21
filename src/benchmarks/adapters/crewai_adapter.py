@@ -94,9 +94,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
 
         return crewai_tools
 
-    # ═══════════════════════════════════════════════════════════════
-    # Dimension 1: Orchestration
-    # ═══════════════════════════════════════════════════════════════
+
 
     async def run_orchestration(
         self,

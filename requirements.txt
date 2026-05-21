@@ -1,18 +1,49 @@
-crewai
-langgraph
-langchain
-langchain-openai
-fastapi
-uvicorn[standard]
-python-dotenv
-scikit-learn
-tiktoken
-rich
-presidio-analyzer
-spacy
-sqlalchemy[asyncio]
-asyncpg
-pydantic
-openai
-google-genai
+# ══════════════════════════════════════════════════════════════
+# Mizan — Core Dependencies
+# ══════════════════════════════════════════════════════════════
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
 
+# ══════════════════════════════════════════════════════════════
+# Framework Adapters — install only what you need
+# ══════════════════════════════════════════════════════════════
+
+# --- Code-First Frameworks ---
+crewai>=0.80.0                    # Adapter 1: CrewAI
+langgraph>=0.2.0                  # Adapter 2: LangGraph
+langchain-groq>=0.2.0             # LangGraph LLM backend
+langchain-core>=0.3.0             # LangGraph core
+autogen-agentchat>=0.4.0          # Adapter 3: AutoGen
+autogen-ext[openai]>=0.4.0        # AutoGen OpenAI extension
+openai-agents>=0.1.0              # Adapter 4: OpenAI Agents SDK
+# swarm                           # Adapter 5: OpenAI Swarm (install from git)
+google-adk>=1.0.0                 # Adapter 6: Google ADK
+pydantic-ai>=0.1.0                # Adapter 7: PydanticAI
+smolagents>=1.0.0                 # Adapter 8: SmolAgents (HuggingFace)
+litellm>=1.40.0                   # SmolAgents LLM backend
+llama-index>=0.11.0               # Adapter 9: LlamaIndex
+llama-index-llms-groq>=0.2.0      # LlamaIndex Groq
+haystack-ai>=2.5.0                # Adapter 10: Haystack
+agno>=1.0.0                       # Adapter 11: Agno (ex-Phidata)
+# mastra                          # Adapter 12: Mastra (Python SDK)
+atomic-agents>=1.0.0              # Adapter 13: Atomic Agents
+instructor>=1.4.0                 # Atomic Agents dependency
+groq>=0.9.0                       # Groq client (shared)
+camel-ai[all]>=0.2.0              # Adapter 14: CAMEL-AI
+taskflowai>=0.2.0                 # Adapter 15: TaskFlowAI
+controlflow>=0.11.0               # Adapter 16: ControlFlow
+
+# --- Low-Code Platforms (API-based, no SDK needed) ---
+# Langflow:  requires running Langflow server
+# Flowise:   requires running Flowise server
+# n8n:       requires running n8n server
+# Dify:      requires running Dify server
+
+# ══════════════════════════════════════════════════════════════
+# LLM Providers
+# ══════════════════════════════════════════════════════════════
+openai>=1.40.0
+google-genai>=1.0.0

@@ -9,6 +9,7 @@ Usage:
 import asyncio
 import json
 import time
+import logging
 import importlib
 from typing import Dict, List, Optional
 from datetime import datetime
@@ -37,7 +38,9 @@ from benchmarks.scenarios.test_data import (
     FRAMEWORKS_REGISTRY,
 )
 from benchmarks.scoring.scorer import BenchmarkScorer, FrameworkScore
+from benchmarks.reporting.report_generator import generate_report
 
+logger = logging.getLogger("mizan.runner")
 
 RESULTS_DIR = Path("benchmark_results")
 
@@ -306,27 +309,42 @@ class BenchmarkRunner:
     # ═══════════════════════════════════════════════════════════════
 
     def _save_results(self, comparison: Dict):
-        """Save results to JSON."""
+        """Save results to JSON + HTML report."""
         RESULTS_DIR.mkdir(exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filepath = RESULTS_DIR / f"benchmark_{timestamp}.json"
-        with open(filepath, "w", encoding="utf-8") as f:
+
+        # JSON
+        json_path = RESULTS_DIR / f"benchmark_{timestamp}.json"
+        with open(json_path, "w", encoding="utf-8") as f:
             json.dump(comparison, f, indent=2, ensure_ascii=False, default=str)
-        print(f"\n  Results saved to: {filepath}")
+        print(f"\n  📄 JSON saved:  {json_path}")
+
+        # HTML Report
+        try:
+            html_path = generate_report(
+                comparison,
+                output_dir=str(RESULTS_DIR),
+                filename_prefix=timestamp,
+            )
+            print(f"  📊 HTML report: {html_path}")
+        except Exception as e:
+            logger.warning(f"HTML report generation failed: {e}")
 
     def _print_leaderboard(self, comparison: Dict):
         """Print a formatted leaderboard to console."""
         print(f"\n{'='*80}")
-        print(f"  MIZAN BENCHMARK LEADERBOARD")
+        print(f"  ⚖️  MIZAN BENCHMARK LEADERBOARD")
         print(f"{'='*80}")
         print(f"  {'Rank':<5} {'Framework':<20} {'Score':<8} {'Orch':<6} {'Tools':<6} "
               f"{'Safety':<7} {'HITL':<6} {'Mem':<6} {'Obs':<6} {'Multi':<6}")
         print(f"  {'-'*74}")
 
+        medals = {1: '🥇', 2: '🥈', 3: '🥉'}
         for entry in comparison["ranking"]:
             dims = entry["dimensions"]
+            medal = medals.get(entry['rank'], f"  {entry['rank']}")
             print(
-                f"  {entry['rank']:<5} {entry['framework']:<20} "
+                f"  {medal:<5} {entry['framework']:<20} "
                 f"{entry['total_score']:<8.2f} "
                 f"{dims.get('orchestration', 0):<6.1f} "
                 f"{dims.get('tool_use', 0):<6.1f} "
@@ -337,7 +355,7 @@ class BenchmarkRunner:
                 f"{dims.get('multimodal', 0):<6.1f}"
             )
 
-        print(f"\n  Best per dimension:")
+        print(f"\n  🏆 Best per dimension:")
         for dim, info in comparison.get("best_per_dimension", {}).items():
             print(f"    {dim:<25} {info['framework']:<20} ({info['score']}/10)")
 
