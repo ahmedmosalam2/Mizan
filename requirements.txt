@@ -10,3 +10,8 @@ tiktoken
 rich
 presidio-analyzer
 spacy
+sqlalchemy[asyncio]
+asyncpg
+pydantic
+openai
+google-genai
