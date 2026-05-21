@@ -1,9 +1,3 @@
-"""
-CrewAI Framework Adapter.
-
-Translates Mizan's standard benchmark interface into CrewAI API calls.
-"""
-
 import time
 import json
 import re

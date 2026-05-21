@@ -159,11 +159,7 @@ class BaseFrameworkAdapter(ABC):
         - Handle inter-agent communication
         - Return aggregated results
         """
-        ...
-
-    # ═══════════════════════════════════════════════════════════════
-    # Dimension 2: Tool Use & Integrations
-    # ═══════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════
 
     @abstractmethod
     async def run_with_tools(
