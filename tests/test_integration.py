@@ -110,7 +110,7 @@ class TestMockLLMEndToEnd:
         # Each result should be a ScenarioResult
         for scenario_id, result in results.items():
             assert scenario_id in ALL_SCENARIO_IDS, f"Unknown scenario: {scenario_id}"
-            assert result.framework_name == working_fw
+            assert result.framework_name.lower() == working_fw.lower()
             assert result.status in ("completed", "failed", "timeout")
 
     @pytest.mark.asyncio

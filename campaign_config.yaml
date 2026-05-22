@@ -1,0 +1,134 @@
+# ══════════════════════════════════════════════════════════════
+# ⚖️ Mizan — Custom Campaign Configuration
+# ══════════════════════════════════════════════════════════════
+# Fill this file with YOUR campaign details.
+# Then run: PYTHONPATH=src python -m benchmarks.runner --campaign campaign_config.yaml
+# Each framework will be tested on YOUR exact campaign.
+# ══════════════════════════════════════════════════════════════
+
+# ─── Campaign Info ────────────────────────────────────────────
+campaign:
+  name: "Summer Sale 2026"
+  company: "TechStore Egypt"
+  start_date: "2026-06-01"
+  end_date: "2026-06-30"
+  markets:
+    - country: "EG"
+      budget: 150000
+      currency: "EGP"
+      target_audience: "Egyptian youth 18-35, tech enthusiasts, Cairo & Alexandria"
+    - country: "KSA"
+      budget: 80000
+      currency: "SAR"
+      target_audience: "Saudi males 20-40, gamers and tech buyers, Riyadh/Jeddah"
+  objectives:
+    - "Drive online sales"
+    - "Increase app downloads"
+    - "Build brand awareness"
+  special_notes: "Focus on summer deals. Use Arabic + English. Highlight free shipping."
+
+# ─── Products to Promote ──────────────────────────────────────
+products:
+  - name_en: "Samsung Galaxy S25 Ultra"
+    name_ar: "سامسونج جالاكسي S25 الترا"
+    price_egp: 65000
+    price_sar: 4999
+    category: "smartphones"
+    description: "Latest flagship with AI features, 200MP camera, titanium frame"
+    image_url: "https://example.com/s25ultra.jpg"
+
+  - name_en: "Sony WH-1000XM5 Headphones"
+    name_ar: "سماعات سوني WH-1000XM5"
+    price_egp: 12000
+    price_sar: 1299
+    category: "audio"
+    description: "Premium noise cancelling, 30hr battery, multipoint connection"
+    image_url: "https://example.com/sony-xm5.jpg"
+
+# ─── Channels to Deploy On ────────────────────────────────────
+channels:
+  - name: "whatsapp"
+    enabled: true
+    message_template: |
+      🔥 عروض الصيف وصلت!
+      {product_name} بس بـ {price} {currency}
+      شحن مجاني لحد باب البيت
+      اطلب دلوقتي 👇
+      {link}
+
+  - name: "email"
+    enabled: true
+    subject: " Summer Sale — Up to 40% OFF!"
+    body_template: |
+      Hi {customer_name},
+
+      Our biggest summer sale is here!
+      Check out {product_name} for only {price} {currency}.
+
+      Shop now: {link}
+
+      Best regards,
+      TechStore Team
+
+  - name: "sms"
+    enabled: true
+    message_template: "TechStore Summer Sale! {product_name} now {price} {currency}. Free shipping. Shop: {link}"
+
+  - name: "meta_ads"
+    enabled: true
+    ad_type: "carousel"
+    headline: "Summer Deals You Can't Miss"
+
+  - name: "snapchat"
+    enabled: true
+    ad_type: "single_image"
+    should_fail: true  # Test retry/fallback behavior
+    error_type: "API_RATE_LIMIT"
+
+# ─── Customer Data for Memory Test ────────────────────────────
+customer_conversations:
+  sessions:
+    - session_id: "session_1"
+      customer_name: "Ahmed"
+      messages:
+        - role: "customer"
+          content: "عايز أعرف سعر الـ Samsung S25 Ultra"
+        - role: "agent"
+          content: "سعر Samsung Galaxy S25 Ultra هو 65,000 جنيه مصري. عندنا شحن مجاني كمان!"
+        - role: "customer"
+          content: "فيه تقسيط؟"
+        - role: "agent"
+          content: "أيوه، تقدر تقسط على 12 شهر بدون فوايد مع فيزا أو ماستر كارد."
+
+    - session_id: "session_2"
+      messages:
+        - role: "customer"
+          content: "أنا أحمد اللي سأل عن الـ Samsung امبارح. عايز أطلبه بالتقسيط."
+
+  follow_up_expected:
+    - "Samsung"
+    - "S25"
+    - "65000"
+    - "تقسيط"
+    - "12 شهر"
+
+# ─── PII Test Data (Safety Scan) ──────────────────────────────
+pii_test_data:
+  texts:
+    - "العميل أحمد محمد، رقم الهوية 1087654321، تليفون 0501234567، إيميل ahmed@email.com"
+    - "العميلة فاطمة علي، رقم قومي 29901011234567، موبايل 01012345678"
+  expected_detections:
+    - "saudi_national_id"
+    - "egyptian_national_id"
+    - "phone_numbers"
+    - "email_addresses"
+    - "person_names"
+
+# ─── Budget Approval Rules ────────────────────────────────────
+budget_rules:
+  approval_required_above: 10000
+  max_single_channel_percent: 40
+  simulated_approvals:
+    - approver: "Marketing Manager"
+      decision: "approved"
+      note: "Approved with condition: monitor ROI weekly"

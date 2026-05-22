@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
-    { name = "Ahmed Mosalam", email = "ahmedmosalam@example.com" },
+    { name = "Ahmed Mosalam" },
 ]
 keywords = ["benchmark", "ai-agents", "mena", "arabic", "llm", "multi-agent"]
 classifiers = [

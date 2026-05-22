@@ -67,7 +67,9 @@ def _setup_logging(verbose: bool = False, quiet: bool = False):
     )
 
     # CLI output handler — clean user-facing messages
-    cli_handler = logging.StreamHandler(sys.stdout)
+    # Force UTF-8 on Windows to avoid cp1252 emoji crashes
+    cli_stream = open(sys.stdout.fileno(), mode='w', encoding='utf-8', closefd=False)
+    cli_handler = logging.StreamHandler(cli_stream)
     cli_handler.setFormatter(logging.Formatter("%(message)s"))
     cli_logger.addHandler(cli_handler)
     cli_logger.setLevel(logging.INFO if not quiet else logging.WARNING)
@@ -128,6 +130,7 @@ class BenchmarkRunner:
         timeout_seconds: float = 120.0,
         dry_run: bool = False,
         output_format: str = "all",
+        campaign_config: Optional[str] = None,
     ):
         self.llm_config = llm_config or {
             "provider": "groq",
@@ -140,6 +143,45 @@ class BenchmarkRunner:
         self.timeout_seconds = timeout_seconds
         self.dry_run = dry_run
         self.output_format = output_format
+
+        # Load custom campaign or use defaults from test_data
+        if campaign_config:
+            self._load_custom_campaign(campaign_config)
+        else:
+            self._load_default_data()
+
+    def _load_default_data(self):
+        """Use the built-in test_data scenarios."""
+        self._campaign_brief = CAMPAIGN_BRIEF
+        self._content_task = CONTENT_GENERATION_TASK
+        self._pii_texts = PII_TEST_TEXTS
+        self._budget_request = BUDGET_REALLOCATION_REQUEST
+        self._approval_rules = APPROVAL_RULES
+        self._simulated_approvals = SIMULATED_APPROVALS
+        self._conversation_history = CONVERSATION_HISTORY
+        self._expected_recall = EXPECTED_RECALL
+        self._deployment_task = DEPLOYMENT_TASK
+        self._multimodal_task = MULTIMODAL_TASK
+
+    def _load_custom_campaign(self, config_path: str):
+        """Load user-defined campaign from YAML."""
+        from benchmarks.scenarios.campaign_loader import load_campaign
+        data = load_campaign(config_path)
+        cli_logger.info("\n  [CAMPAIGN] Loaded custom campaign: %s", config_path)
+        cli_logger.info("  [CAMPAIGN] Name: %s", data["campaign_brief"].get("campaign_name", "N/A"))
+        cli_logger.info("  [CAMPAIGN] Products: %d", len(data.get("product_catalog", [])))
+        cli_logger.info("  [CAMPAIGN] Channels: %s", ", ".join(data["campaign_brief"].get("channels", [])))
+
+        self._campaign_brief = data["campaign_brief"]
+        self._content_task = data["content_generation_task"]
+        self._pii_texts = data["pii_test_texts"]
+        self._budget_request = data["budget_reallocation_request"]
+        self._approval_rules = data["approval_rules"]
+        self._simulated_approvals = data["simulated_approvals"]
+        self._conversation_history = data["conversation_history"]
+        self._expected_recall = data["expected_recall"]
+        self._deployment_task = data["deployment_task"]
+        self._multimodal_task = data["multimodal_task"]
 
     async def run_single_framework(
         self,
@@ -300,7 +342,7 @@ class BenchmarkRunner:
         agent_specs = _build_agent_specs()
         return await adapter.run_orchestration(
             agent_specs=agent_specs,
-            task=CAMPAIGN_BRIEF,
+            task=self._campaign_brief,
             orchestration_mode="hierarchical",
         )
 
@@ -310,17 +352,19 @@ class BenchmarkRunner:
             AgentSpec(
                 name="ContentArchitect",
                 role="Content Generator",
-                goal=CONTENT_GENERATION_TASK["goal"],
+                goal=self._content_task["goal"],
                 backstory=AGENT_SPECS[1]["backstory"],
             ),
         ]
 
         # Create a mock RAG tool
+        content_task = self._content_task
         def search_catalog(query: str) -> str:
             """Search the product catalog."""
-            from benchmarks.scenarios.test_data import PRODUCT_CATALOG
-            results = [p for p in PRODUCT_CATALOG if query.lower() in p["name_en"].lower() or query in p["name_ar"]]
-            return json.dumps(results[:3], ensure_ascii=False) if results else "No products found"
+            product = content_task.get("product", {})
+            if query.lower() in product.get("name_en", "").lower() or query in product.get("name_ar", ""):
+                return json.dumps(product, ensure_ascii=False)
+            return "No products found"
 
         tools = [
             ToolSpec(
@@ -333,14 +377,14 @@ class BenchmarkRunner:
 
         return await adapter.run_with_tools(
             agent_specs=agent_specs,
-            task=CONTENT_GENERATION_TASK,
+            task=self._content_task,
             tools=tools,
         )
 
     async def _run_safety(self, adapter: BaseFrameworkAdapter) -> ScenarioResult:
         """Scenario 3: PII Scan — tests safety & privacy."""
         return await adapter.run_safety_check(
-            text_with_pii=PII_TEST_TEXTS["saudi_text"] + "\n\n" + PII_TEST_TEXTS["egyptian_text"],
+            text_with_pii=self._pii_texts.get("saudi_text", "") + "\n\n" + self._pii_texts.get("egyptian_text", ""),
             pii_types=["saudi_national_id", "egyptian_national_id", "phone_numbers", "email_addresses", "person_names"],
             jurisdiction="both",
         )
@@ -364,17 +408,22 @@ class BenchmarkRunner:
 
         return await adapter.run_with_approval(
             agent_specs=agent_specs,
-            task=BUDGET_REALLOCATION_REQUEST,
-            approval_rules=APPROVAL_RULES,
-            simulated_approvals=SIMULATED_APPROVALS,
+            task=self._budget_request,
+            approval_rules=self._approval_rules,
+            simulated_approvals=self._simulated_approvals,
         )
 
     async def _run_memory(self, adapter: BaseFrameworkAdapter) -> ScenarioResult:
         """Scenario 5: Cross-Session Chat — tests memory."""
+        follow_up = ""
+        if self._conversation_history and len(self._conversation_history) > 1:
+            follow_up = self._conversation_history[-1].get("messages", [{}])[0].get("content", "")
+        elif self._conversation_history:
+            follow_up = self._conversation_history[0].get("messages", [{}])[-1].get("content", "")
         return await adapter.run_with_memory(
-            conversation_history=CONVERSATION_HISTORY,
-            follow_up_query=CONVERSATION_HISTORY[1]["messages"][0]["content"],
-            expected_recall=EXPECTED_RECALL,
+            conversation_history=self._conversation_history,
+            follow_up_query=follow_up,
+            expected_recall=self._expected_recall,
         )
 
     async def _run_observability(self, adapter: BaseFrameworkAdapter) -> ScenarioResult:
@@ -396,7 +445,7 @@ class BenchmarkRunner:
 
         return await adapter.run_with_tracing(
             agent_specs=agent_specs,
-            task=DEPLOYMENT_TASK,
+            task=self._deployment_task,
             inject_failure=inject_failure,
         )
 
@@ -405,7 +454,7 @@ class BenchmarkRunner:
         return await adapter.run_multimodal(
             image_path=None,  # Will use product URL from task
             document_path=None,
-            task=MULTIMODAL_TASK,
+            task=self._multimodal_task,
         )
 
     # ═══════════════════════════════════════════════════════════════
@@ -422,7 +471,7 @@ class BenchmarkRunner:
             json_path = RESULTS_DIR / f"benchmark_{timestamp}.json"
             with open(json_path, "w", encoding="utf-8") as f:
                 json.dump(comparison, f, indent=2, ensure_ascii=False, default=str)
-            cli_logger.info("\n  📄 JSON saved:  %s", json_path)
+            cli_logger.info("\n  [JSON] Saved:   %s", json_path)
 
         # HTML Report
         if self.output_format in ("html", "all"):
@@ -432,7 +481,7 @@ class BenchmarkRunner:
                     output_dir=str(RESULTS_DIR),
                     filename_prefix=timestamp,
                 )
-                cli_logger.info("  📊 HTML report: %s", html_path)
+                cli_logger.info("  [HTML] Report:  %s", html_path)
             except Exception as e:
                 logger.warning("HTML report generation failed: %s", e, exc_info=True)
 
@@ -440,7 +489,7 @@ class BenchmarkRunner:
         if self.output_format in ("markdown", "all"):
             md_path = RESULTS_DIR / f"benchmark_{timestamp}.md"
             self._save_markdown(comparison, md_path)
-            cli_logger.info("  📝 Markdown:    %s", md_path)
+            cli_logger.info("  [MD]   Summary: %s", md_path)
 
     def _save_markdown(self, comparison: Dict, path: Path):
         """Save results as a Markdown table."""
@@ -467,7 +516,7 @@ class BenchmarkRunner:
     def _print_leaderboard(self, comparison: Dict):
         """Print a formatted leaderboard to console."""
         cli_logger.info("\n%s", "=" * 80)
-        cli_logger.info("  ⚖️  MIZAN BENCHMARK LEADERBOARD")
+        cli_logger.info("  MIZAN BENCHMARK LEADERBOARD")
         cli_logger.info("%s", "=" * 80)
         cli_logger.info(
             "  %-5s %-20s %-8s %-6s %-6s %-7s %-6s %-6s %-6s %-6s",
@@ -475,7 +524,7 @@ class BenchmarkRunner:
         )
         cli_logger.info("  %s", "-" * 74)
 
-        medals = {1: "🥇", 2: "🥈", 3: "🥉"}
+        medals = {1: "#1", 2: "#2", 3: "#3"}
         for entry in comparison["ranking"]:
             dims = entry["dimensions"]
             medal = medals.get(entry["rank"], f"  {entry['rank']}")
@@ -488,7 +537,7 @@ class BenchmarkRunner:
                 dims.get("multimodal", 0),
             )
 
-        cli_logger.info("\n  🏆 Best per dimension:")
+        cli_logger.info("\n  [*] Best per dimension:")
         for dim, info in comparison.get("best_per_dimension", {}).items():
             cli_logger.info("    %-25s %-20s (%s/10)", dim, info["framework"], info["score"])
 
@@ -521,8 +570,8 @@ Examples:
                         help="Framework IDs to benchmark (default: all available)")
     parser.add_argument("--scenarios", nargs="+", default=None,
                         help="Scenario IDs to run (default: all 7)")
-    parser.add_argument("--llm-provider", default="groq", help="LLM provider (groq/gemini/openai/mock)")
-    parser.add_argument("--llm-model", default="llama-3.3-70b-versatile", help="LLM model name")
+    parser.add_argument("--llm-provider", default=os.getenv("MODEL_PROVIDER", "groq"), help="LLM provider (groq/openai/google/anthropic/mock)")
+    parser.add_argument("--llm-model", default=os.getenv("MODEL_NAME", "llama-3.3-70b-versatile"), help="LLM model name")
     parser.add_argument("--mock", action="store_true",
                         help="Use mock LLM responses (no API keys needed, deterministic)")
     parser.add_argument("--dry-run", action="store_true",
@@ -533,17 +582,30 @@ Examples:
                         default="all", help="Output format (default: all)")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose debug logging")
     parser.add_argument("--quiet", "-q", action="store_true", help="Suppress non-essential output")
+    parser.add_argument("--campaign", type=str, default=None,
+                        help="Path to custom campaign YAML file (your own content, products, channels)")
     args = parser.parse_args()
 
     _setup_logging(verbose=args.verbose, quiet=args.quiet)
 
     # If --mock, force the mock provider
     provider = "mock" if args.mock else args.llm_provider
+    
+    # Dynamically select the API key based on the provider
+    api_key = ""
+    if provider.lower() == "groq":
+        api_key = os.getenv("GROQ_API_KEY", "")
+    elif provider.lower() == "openai":
+        api_key = os.getenv("OPENAI_API_KEY", "")
+    elif provider.lower() in ["google", "gemini"]:
+        api_key = os.getenv("GOOGLE_API_KEY", "")
+    elif provider.lower() == "anthropic":
+        api_key = os.getenv("ANTHROPIC_API_KEY", "")
 
     llm_config = {
         "provider": provider,
         "model": args.llm_model,
-        "api_key": os.getenv("GROQ_API_KEY", ""),
+        "api_key": api_key,
     }
 
     runner = BenchmarkRunner(
@@ -551,6 +613,7 @@ Examples:
         timeout_seconds=args.timeout,
         dry_run=args.dry_run,
         output_format=args.output_format,
+        campaign_config=args.campaign,
     )
     await runner.run_all_frameworks(
         framework_ids=args.frameworks,
