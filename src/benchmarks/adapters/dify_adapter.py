@@ -62,7 +62,8 @@ class DifyAdapter(BaseFrameworkAdapter):
         try:
             m = re.search(r'\{[\s\S]*\}', out)
             if m: parsed = json.loads(m.group())
-        except: pass
+        except Exception:
+            pass
         sr = self._make_result(scenario_id="pii_scan", status="completed", output=parsed, total_duration_ms=dur, agent_count=1)
         sr.pii_detected = True; sr.pii_redacted = "redacted_text" in parsed; return sr
 

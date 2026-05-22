@@ -22,3 +22,38 @@ logs/
 # Editor configs
 .vscode/
 .idea/
+
+# ═══════════════════════════════════════
+# Build & Packaging
+# ═══════════════════════════════════════
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ═══════════════════════════════════════
+# Testing & Quality
+# ═══════════════════════════════════════
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# ═══════════════════════════════════════
+# Generated Benchmark Output
+# ═══════════════════════════════════════
+benchmark_results/
+src/benchmark_results/
+
+# ═══════════════════════════════════════
+# Docker
+# ═══════════════════════════════════════
+.docker/
+
+# ═══════════════════════════════════════
+# OS files
+# ═══════════════════════════════════════
+.DS_Store
+Thumbs.db

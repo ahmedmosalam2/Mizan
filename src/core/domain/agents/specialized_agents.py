@@ -102,7 +102,7 @@ class AnalysisAgent(Agent):
         """Parse LLM analysis result."""
         try:
             return _extract_json(result)
-        except:
+        except Exception:
             return {
                 "insights": [result],
                 "data_quality": 50,
@@ -188,7 +188,7 @@ class OptimizationAgent(Agent):
         """Parse optimization recommendations."""
         try:
             return _extract_json(result)
-        except:
+        except Exception:
             return {
                 "actions": [result],
                 "estimated_improvement": 25,

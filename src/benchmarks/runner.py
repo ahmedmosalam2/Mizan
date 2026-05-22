@@ -4,6 +4,10 @@ Benchmark Runner — Executes all scenarios on all framework adapters.
 Usage:
     python -m benchmarks.runner --frameworks crewai langgraph --scenarios all
     python -m benchmarks.runner --all
+    python -m benchmarks.runner --dry-run            # Validate without running
+    python -m benchmarks.runner --mock                # Use mock LLM (no API keys needed)
+    python -m benchmarks.runner --timeout 60          # Per-scenario timeout (seconds)
+    python -m benchmarks.runner --output-format json   # json | html | markdown | all
 """
 
 import asyncio
@@ -11,6 +15,7 @@ import json
 import time
 import logging
 import importlib
+import sys
 from typing import Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
@@ -40,9 +45,46 @@ from benchmarks.scenarios.test_data import (
 from benchmarks.scoring.scorer import BenchmarkScorer, FrameworkScore
 from benchmarks.reporting.report_generator import generate_report
 
+# ═══════════════════════════════════════════════════════════════
+# Structured Logging Setup
+# ═══════════════════════════════════════════════════════════════
+
 logger = logging.getLogger("mizan.runner")
 
+# CLI-facing logger — user-visible output
+cli_logger = logging.getLogger("mizan.cli")
+
+
+def _setup_logging(verbose: bool = False, quiet: bool = False):
+    """Configure structured logging for runner and CLI output."""
+    log_level = logging.DEBUG if verbose else (logging.WARNING if quiet else logging.INFO)
+
+    # Internal engine logger — structured for debugging
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    # CLI output handler — clean user-facing messages
+    cli_handler = logging.StreamHandler(sys.stdout)
+    cli_handler.setFormatter(logging.Formatter("%(message)s"))
+    cli_logger.addHandler(cli_handler)
+    cli_logger.setLevel(logging.INFO if not quiet else logging.WARNING)
+    cli_logger.propagate = False
+
+
 RESULTS_DIR = Path("benchmark_results")
+
+ALL_SCENARIO_IDS = [
+    "campaign_planning",
+    "content_generation",
+    "pii_scan",
+    "budget_approval",
+    "cross_session_chat",
+    "channel_deploy",
+    "multimodal_ad",
+]
 
 
 def _load_adapter(framework_id: str) -> Optional[BaseFrameworkAdapter]:
@@ -53,8 +95,13 @@ def _load_adapter(framework_id: str) -> Optional[BaseFrameworkAdapter]:
         class_name = "".join(w.capitalize() for w in framework_id.split("_")) + "Adapter"
         adapter_class = getattr(module, class_name)
         return adapter_class()
-    except (ImportError, AttributeError) as e:
-        print(f"  [!] Could not load adapter for '{framework_id}': {e}")
+    except ImportError as e:
+        logger.warning("Could not import adapter for '%s': %s", framework_id, e)
+        cli_logger.info("  [!] Could not load adapter for '%s': %s", framework_id, e)
+        return None
+    except AttributeError as e:
+        logger.error("Adapter class not found for '%s': %s", framework_id, e)
+        cli_logger.info("  [!] Adapter class missing for '%s': %s", framework_id, e)
         return None
 
 
@@ -75,7 +122,13 @@ def _build_agent_specs() -> List[AgentSpec]:
 class BenchmarkRunner:
     """Runs benchmark scenarios on framework adapters and collects results."""
 
-    def __init__(self, llm_config: Optional[Dict] = None):
+    def __init__(
+        self,
+        llm_config: Optional[Dict] = None,
+        timeout_seconds: float = 120.0,
+        dry_run: bool = False,
+        output_format: str = "all",
+    ):
         self.llm_config = llm_config or {
             "provider": "groq",
             "model": "llama-3.3-70b-versatile",
@@ -84,6 +137,9 @@ class BenchmarkRunner:
         self.scorer = BenchmarkScorer()
         self.all_results: Dict[str, Dict[str, ScenarioResult]] = {}
         self.all_scores: List[FrameworkScore] = []
+        self.timeout_seconds = timeout_seconds
+        self.dry_run = dry_run
+        self.output_format = output_format
 
     async def run_single_framework(
         self,
@@ -91,19 +147,26 @@ class BenchmarkRunner:
         scenarios: Optional[List[str]] = None,
     ) -> Dict[str, ScenarioResult]:
         """Run all (or selected) scenarios on a single framework."""
-        print(f"\n{'='*60}")
-        print(f"  BENCHMARKING: {framework_id}")
-        print(f"{'='*60}")
+        cli_logger.info("\n%s", "=" * 60)
+        cli_logger.info("  BENCHMARKING: %s", framework_id)
+        cli_logger.info("%s", "=" * 60)
 
         adapter = _load_adapter(framework_id)
         if not adapter:
+            return {}
+
+        # ── Dry-run mode: validate adapter can load, then skip execution ──
+        if self.dry_run:
+            cli_logger.info("  [DRY-RUN] Adapter '%s' loaded successfully ✓", framework_id)
+            cli_logger.info("  [DRY-RUN] Would run scenarios: %s", scenarios or "all")
             return {}
 
         # Setup
         try:
             await adapter.setup(self.llm_config)
         except Exception as e:
-            print(f"  [X] Setup failed: {e}")
+            logger.error("Setup failed for '%s': %s", framework_id, e, exc_info=True)
+            cli_logger.info("  [X] Setup failed: %s", e)
             return {}
 
         # Define scenario runners
@@ -124,36 +187,68 @@ class BenchmarkRunner:
         for scenario_id in scenarios:
             runner_fn = scenario_runners.get(scenario_id)
             if not runner_fn:
-                print(f"  [?] Unknown scenario: {scenario_id}")
+                logger.warning("Unknown scenario requested: %s", scenario_id)
+                cli_logger.info("  [?] Unknown scenario: %s", scenario_id)
                 continue
 
-            print(f"\n  --- Scenario: {scenario_id} ---")
+            cli_logger.info("\n  --- Scenario: %s ---", scenario_id)
             adapter.reset_metrics()
 
             start = time.time()
             try:
-                result = await runner_fn(adapter)
+                # Run with timeout protection
+                result = await asyncio.wait_for(
+                    runner_fn(adapter),
+                    timeout=self.timeout_seconds,
+                )
                 result.total_duration_ms = (time.time() - start) * 1000
                 result.started_at = datetime.now().isoformat()
                 result.finished_at = datetime.now().isoformat()
                 results[scenario_id] = result
-                print(f"  [+] {scenario_id}: {result.status} ({result.total_duration_ms:.0f}ms)")
+                cli_logger.info(
+                    "  [+] %s: %s (%dms)",
+                    scenario_id, result.status, result.total_duration_ms,
+                )
+            except asyncio.TimeoutError:
+                duration = (time.time() - start) * 1000
+                result = ScenarioResult(
+                    scenario_id=scenario_id,
+                    framework_name=framework_id,
+                    status="timeout",
+                    error=f"Scenario exceeded {self.timeout_seconds}s timeout",
+                    total_duration_ms=duration,
+                )
+                results[scenario_id] = result
+                logger.warning(
+                    "Scenario '%s' timed out for '%s' after %.0fms",
+                    scenario_id, framework_id, duration,
+                )
+                cli_logger.info(
+                    "  [⏰] %s: TIMEOUT after %ds", scenario_id, self.timeout_seconds,
+                )
             except Exception as e:
+                duration = (time.time() - start) * 1000
                 result = ScenarioResult(
                     scenario_id=scenario_id,
                     framework_name=framework_id,
                     status="failed",
                     error=str(e),
-                    total_duration_ms=(time.time() - start) * 1000,
+                    total_duration_ms=duration,
                 )
                 results[scenario_id] = result
-                print(f"  [X] {scenario_id}: FAILED — {e}")
+                logger.error(
+                    "Scenario '%s' failed for '%s': %s",
+                    scenario_id, framework_id, e, exc_info=True,
+                )
+                cli_logger.info("  [X] %s: FAILED — %s", scenario_id, e)
 
-        # Teardown
+        # Teardown — log errors instead of silently swallowing them
         try:
             await adapter.teardown()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(
+                "Teardown failed for '%s': %s (non-fatal)", framework_id, e,
+            )
 
         self.all_results[framework_id] = results
         return results
@@ -167,9 +262,15 @@ class BenchmarkRunner:
         if framework_ids is None:
             framework_ids = [fw["id"] for fw in FRAMEWORKS_REGISTRY]
 
-        print(f"\n{'#'*60}")
-        print(f"  MIZAN BENCHMARK — {len(framework_ids)} frameworks x {len(scenarios or ['all'])} scenarios")
-        print(f"{'#'*60}")
+        cli_logger.info("\n%s", "#" * 60)
+        cli_logger.info(
+            "  MIZAN BENCHMARK — %d frameworks x %s scenarios",
+            len(framework_ids),
+            len(scenarios) if scenarios else "all 7",
+        )
+        if self.dry_run:
+            cli_logger.info("  MODE: DRY-RUN (validation only, no execution)")
+        cli_logger.info("%s", "#" * 60)
 
         for fw_id in framework_ids:
             results = await self.run_single_framework(fw_id, scenarios)
@@ -184,6 +285,9 @@ class BenchmarkRunner:
             self._save_results(comparison)
             self._print_leaderboard(comparison)
             return comparison
+
+        if self.dry_run:
+            cli_logger.info("\n  ✅ DRY-RUN COMPLETE — all adapters validated.")
 
         return {}
 
@@ -313,51 +417,80 @@ class BenchmarkRunner:
         RESULTS_DIR.mkdir(exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        # JSON
-        json_path = RESULTS_DIR / f"benchmark_{timestamp}.json"
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(comparison, f, indent=2, ensure_ascii=False, default=str)
-        print(f"\n  📄 JSON saved:  {json_path}")
+        # JSON (always saved)
+        if self.output_format in ("json", "all"):
+            json_path = RESULTS_DIR / f"benchmark_{timestamp}.json"
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(comparison, f, indent=2, ensure_ascii=False, default=str)
+            cli_logger.info("\n  📄 JSON saved:  %s", json_path)
 
         # HTML Report
-        try:
-            html_path = generate_report(
-                comparison,
-                output_dir=str(RESULTS_DIR),
-                filename_prefix=timestamp,
+        if self.output_format in ("html", "all"):
+            try:
+                html_path = generate_report(
+                    comparison,
+                    output_dir=str(RESULTS_DIR),
+                    filename_prefix=timestamp,
+                )
+                cli_logger.info("  📊 HTML report: %s", html_path)
+            except Exception as e:
+                logger.warning("HTML report generation failed: %s", e, exc_info=True)
+
+        # Markdown summary
+        if self.output_format in ("markdown", "all"):
+            md_path = RESULTS_DIR / f"benchmark_{timestamp}.md"
+            self._save_markdown(comparison, md_path)
+            cli_logger.info("  📝 Markdown:    %s", md_path)
+
+    def _save_markdown(self, comparison: Dict, path: Path):
+        """Save results as a Markdown table."""
+        lines = [
+            "# ⚖️ Mizan Benchmark Results",
+            f"\n**Date:** {comparison.get('evaluated_at', 'N/A')}",
+            f"**Frameworks tested:** {comparison.get('frameworks_count', 0)}",
+            "",
+            "| Rank | Framework | Score | Orch | Tools | Safety | HITL | Memory | Obs | Multi |",
+            "|------|-----------|-------|------|-------|--------|------|--------|-----|-------|",
+        ]
+        for entry in comparison.get("ranking", []):
+            d = entry["dimensions"]
+            lines.append(
+                f"| {entry['rank']} | {entry['framework']} | {entry['total_score']:.2f} | "
+                f"{d.get('orchestration', 0):.1f} | {d.get('tool_use', 0):.1f} | "
+                f"{d.get('safety', 0):.1f} | {d.get('human_in_the_loop', 0):.1f} | "
+                f"{d.get('memory', 0):.1f} | {d.get('observability', 0):.1f} | "
+                f"{d.get('multimodal', 0):.1f} |"
             )
-            print(f"  📊 HTML report: {html_path}")
-        except Exception as e:
-            logger.warning(f"HTML report generation failed: {e}")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
 
     def _print_leaderboard(self, comparison: Dict):
         """Print a formatted leaderboard to console."""
-        print(f"\n{'='*80}")
-        print(f"  ⚖️  MIZAN BENCHMARK LEADERBOARD")
-        print(f"{'='*80}")
-        print(f"  {'Rank':<5} {'Framework':<20} {'Score':<8} {'Orch':<6} {'Tools':<6} "
-              f"{'Safety':<7} {'HITL':<6} {'Mem':<6} {'Obs':<6} {'Multi':<6}")
-        print(f"  {'-'*74}")
+        cli_logger.info("\n%s", "=" * 80)
+        cli_logger.info("  ⚖️  MIZAN BENCHMARK LEADERBOARD")
+        cli_logger.info("%s", "=" * 80)
+        cli_logger.info(
+            "  %-5s %-20s %-8s %-6s %-6s %-7s %-6s %-6s %-6s %-6s",
+            "Rank", "Framework", "Score", "Orch", "Tools", "Safety", "HITL", "Mem", "Obs", "Multi",
+        )
+        cli_logger.info("  %s", "-" * 74)
 
-        medals = {1: '🥇', 2: '🥈', 3: '🥉'}
+        medals = {1: "🥇", 2: "🥈", 3: "🥉"}
         for entry in comparison["ranking"]:
             dims = entry["dimensions"]
-            medal = medals.get(entry['rank'], f"  {entry['rank']}")
-            print(
-                f"  {medal:<5} {entry['framework']:<20} "
-                f"{entry['total_score']:<8.2f} "
-                f"{dims.get('orchestration', 0):<6.1f} "
-                f"{dims.get('tool_use', 0):<6.1f} "
-                f"{dims.get('safety', 0):<7.1f} "
-                f"{dims.get('human_in_the_loop', 0):<6.1f} "
-                f"{dims.get('memory', 0):<6.1f} "
-                f"{dims.get('observability', 0):<6.1f} "
-                f"{dims.get('multimodal', 0):<6.1f}"
+            medal = medals.get(entry["rank"], f"  {entry['rank']}")
+            cli_logger.info(
+                "  %-5s %-20s %-8.2f %-6.1f %-6.1f %-7.1f %-6.1f %-6.1f %-6.1f %-6.1f",
+                medal, entry["framework"], entry["total_score"],
+                dims.get("orchestration", 0), dims.get("tool_use", 0),
+                dims.get("safety", 0), dims.get("human_in_the_loop", 0),
+                dims.get("memory", 0), dims.get("observability", 0),
+                dims.get("multimodal", 0),
             )
 
-        print(f"\n  🏆 Best per dimension:")
+        cli_logger.info("\n  🏆 Best per dimension:")
         for dim, info in comparison.get("best_per_dimension", {}).items():
-            print(f"    {dim:<25} {info['framework']:<20} ({info['score']}/10)")
+            cli_logger.info("    %-25s %-20s (%s/10)", dim, info["framework"], info["score"])
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -368,31 +501,67 @@ async def main():
     import argparse
     import os
     from dotenv import load_dotenv
-    
+
     # Load .env file
     load_dotenv()
 
-    parser = argparse.ArgumentParser(description="Mizan Benchmark Runner")
+    parser = argparse.ArgumentParser(
+        description="⚖️ Mizan Benchmark Runner — Evaluate AI agentic frameworks on MENA e-commerce scenarios.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python -m benchmarks.runner --frameworks crewai langgraph   # Test 2 frameworks
+  python -m benchmarks.runner --mock                          # Run with mock LLM (free)
+  python -m benchmarks.runner --dry-run                       # Validate all adapters
+  python -m benchmarks.runner --timeout 60                    # 60s timeout per scenario
+  python -m benchmarks.runner --output-format markdown        # Save as markdown table
+        """,
+    )
     parser.add_argument("--frameworks", nargs="+", default=None,
                         help="Framework IDs to benchmark (default: all available)")
     parser.add_argument("--scenarios", nargs="+", default=None,
-                        help="Scenario IDs to run (default: all)")
-    parser.add_argument("--llm-provider", default="groq", help="LLM provider")
-    parser.add_argument("--llm-model", default="llama-3.3-70b-versatile", help="LLM model")
+                        help="Scenario IDs to run (default: all 7)")
+    parser.add_argument("--llm-provider", default="groq", help="LLM provider (groq/gemini/openai/mock)")
+    parser.add_argument("--llm-model", default="llama-3.3-70b-versatile", help="LLM model name")
+    parser.add_argument("--mock", action="store_true",
+                        help="Use mock LLM responses (no API keys needed, deterministic)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Validate adapter loading without running any scenarios")
+    parser.add_argument("--timeout", type=float, default=120.0,
+                        help="Per-scenario timeout in seconds (default: 120)")
+    parser.add_argument("--output-format", choices=["json", "html", "markdown", "all"],
+                        default="all", help="Output format (default: all)")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose debug logging")
+    parser.add_argument("--quiet", "-q", action="store_true", help="Suppress non-essential output")
     args = parser.parse_args()
 
+    _setup_logging(verbose=args.verbose, quiet=args.quiet)
+
+    # If --mock, force the mock provider
+    provider = "mock" if args.mock else args.llm_provider
+
     llm_config = {
-        "provider": args.llm_provider,
+        "provider": provider,
         "model": args.llm_model,
         "api_key": os.getenv("GROQ_API_KEY", ""),
     }
 
-    runner = BenchmarkRunner(llm_config=llm_config)
+    runner = BenchmarkRunner(
+        llm_config=llm_config,
+        timeout_seconds=args.timeout,
+        dry_run=args.dry_run,
+        output_format=args.output_format,
+    )
     await runner.run_all_frameworks(
         framework_ids=args.frameworks,
         scenarios=args.scenarios,
     )
 
 
-if __name__ == "__main__":
+def main_sync():
+    """Synchronous entry point for CLI (used by pyproject.toml scripts)."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    main_sync()
