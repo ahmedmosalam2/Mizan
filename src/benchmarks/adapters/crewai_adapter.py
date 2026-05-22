@@ -35,26 +35,36 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             
             kwargs = {}
             gateway_url = os.getenv("LLM_GATEWAY_URL")
-            model_str = f"{llm_config['provider']}/{llm_config['model']}"
+            provider = llm_config.get("provider", "groq")
+            model = llm_config.get("model", "llama-3.3-70b-versatile")
+            api_key = llm_config.get("api_key", "") or "mock_key"
             
-            if gateway_url:
+            if provider == "mock":
+                # For mock mode, use the LLM Gateway if available, else use groq with mock key
+                if gateway_url:
+                    model_str = f"openai/{model}"
+                    kwargs["base_url"] = gateway_url
+                else:
+                    model_str = f"groq/{model}"
+            elif gateway_url:
                 kwargs["base_url"] = gateway_url
-                # Tell litellm to parse the response as standard OpenAI completions
-                model_str = f"openai/{llm_config['model']}"
+                model_str = f"openai/{model}"
+            else:
+                model_str = f"{provider}/{model}"
 
             self.llm = LLM(
                 model=model_str,
-                api_key=llm_config.get("api_key", "") or "mock_key",
+                api_key=api_key,
                 **kwargs
             )
             self._is_setup = True
             self.add_trace(TraceEntry(
                 agent_name="system",
                 action="setup",
-                output_summary=f"CrewAI initialized with {llm_config['model']}",
+                output_summary=f"CrewAI initialized with {model_str}",
             ))
-        except ImportError:
-            raise RuntimeError("CrewAI is not installed. Run: pip install crewai")
+        except ImportError as e:
+            raise RuntimeError(f"CrewAI dependency missing: {e}. Run: pip install 'crewai[litellm]'")
 
     async def teardown(self) -> None:
         """Clean up CrewAI resources."""
@@ -148,7 +158,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         crew = Crew(**crew_kwargs)
 
         start = time.time()
-        result = crew.kickoff()
+        result = await crew.kickoff_async()
         duration = (time.time() - start) * 1000
 
         self.add_trace(TraceEntry(
@@ -205,7 +215,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         crew = Crew(agents=[agent], tasks=[crew_task], process=Process.sequential, verbose=True)
 
         start = time.time()
-        result = crew.kickoff()
+        result = await crew.kickoff_async()
         duration = (time.time() - start) * 1000
 
         return self._make_result(
@@ -259,7 +269,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         crew = Crew(agents=[agent], tasks=[task], process=Process.sequential, verbose=True)
 
         start = time.time()
-        result = crew.kickoff()
+        result = await crew.kickoff_async()
         duration = (time.time() - start) * 1000
 
         # Try to parse structured output
@@ -325,7 +335,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         crew = Crew(agents=[agent], tasks=[crew_task], process=Process.sequential, verbose=True)
 
         start = time.time()
-        result = crew.kickoff()
+        result = await crew.kickoff_async()
         duration = (time.time() - start) * 1000
 
         sr = self._make_result(
@@ -382,7 +392,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         crew = Crew(agents=[agent], tasks=[crew_task], process=Process.sequential, verbose=True)
 
         start = time.time()
-        result = crew.kickoff()
+        result = await crew.kickoff_async()
         duration = (time.time() - start) * 1000
 
         sr = self._make_result(
@@ -434,7 +444,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         crew = Crew(agents=[agent], tasks=[crew_task], process=Process.sequential, verbose=True)
 
         start = time.time()
-        result = crew.kickoff()
+        result = await crew.kickoff_async()
         duration = (time.time() - start) * 1000
 
         # Add trace entries for each channel
@@ -498,7 +508,7 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         crew = Crew(agents=[agent], tasks=[crew_task], process=Process.sequential, verbose=True)
 
         start = time.time()
-        result = crew.kickoff()
+        result = await crew.kickoff_async()
         duration = (time.time() - start) * 1000
 
         return self._make_result(

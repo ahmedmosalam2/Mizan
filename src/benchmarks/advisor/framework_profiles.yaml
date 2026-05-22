@@ -1,0 +1,243 @@
+# ══════════════════════════════════════════════════════════════
+# Mizan — Framework Profiles & Operational Problems
+# ══════════════════════════════════════════════════════════════
+
+frameworks:
+
+  crewai:
+    name: "CrewAI"
+    summary: "Role-based multi-agent framework. Excellent for processes with strict agent roles and human sign-offs."
+    production_ready: true
+    features:
+      hitl: true
+      hitl_type: "native pause/resume"
+      memory: true
+      memory_type: "short-term + optional long-term"
+      tool_use: true
+      multimodal: false
+      scalability: "medium"
+      multi_agent: "hierarchical" # Manager-worker and sequential delegation
+
+    # How well this framework solves each specific operational problem (1-10)
+    use_case_fit:
+      send_bulk_messages: 6            # Too heavy and slow for simple sending
+      budget_reallocation_approval: 10 # Perfect: Native manager-approver gates
+      pii_compliance: 5                # Broad try-except, not specialized
+      customer_support_memory: 7       # Has memory, but not unbounded
+      ad_image_generation: 4           # No native multimodal support
+
+  langgraph:
+    name: "LangGraph"
+    summary: "State-machine graph framework. Best for complex logic, cyclic paths, and custom state control."
+    production_ready: true
+    features:
+      hitl: true
+      hitl_type: "manual implementation via graph interrupt"
+      memory: true
+      memory_type: "checkpointing & long-term store"
+      tool_use: true
+      multimodal: true
+      scalability: "high"
+      multi_agent: "graph"        # Fully customizable state transitions and cyclic graphs
+
+    use_case_fit:
+      send_bulk_messages: 7            # Highly reliable, but requires setup boilerplate
+      budget_reallocation_approval: 9  # Great control, but requires manual HITL coding
+      pii_compliance: 8                # Very structured, easy to add validation nodes
+      customer_support_memory: 9       # Unbeatable session checkpointing
+      ad_image_generation: 7           # Can route image inputs through nodes easily
+
+  agno:
+    name: "Agno"
+    summary: "Lightweight, developer-friendly framework (formerly Phidata). Extremely fast and Pythonic."
+    production_ready: true
+    features:
+      hitl: false
+      hitl_type: "not supported"
+      memory: true
+      memory_type: "built-in vector memory"
+      tool_use: true
+      multimodal: true
+      scalability: "medium"
+      multi_agent: "single_or_router" # Simple routers and single agents, no native multi-agent state
+
+    use_case_fit:
+      send_bulk_messages: 10           # Best: Lightweight, extremely fast API dispatch
+      budget_reallocation_approval: 3  # Poor: No native way to pause and wait for human
+      pii_compliance: 4                # Simple wrappers, lacks deep guardrails
+      customer_support_memory: 6       # Simple RAG memory
+      ad_image_generation: 9           # Great: Native multimodal image processing
+
+  letta:
+    name: "Letta (MemGPT)"
+    summary: "Memory-first framework with persistent, unbounded memory. Best for long-term customer relationships."
+    production_ready: true
+    features:
+      hitl: false
+      hitl_type: "not supported"
+      memory: true
+      memory_type: "unbounded persistent memory"
+      tool_use: true
+      multimodal: false
+      scalability: "medium"
+      multi_agent: "single_agent" # Mainly optimized for single high-memory agents
+
+    use_case_fit:
+      send_bulk_messages: 4            # High overhead, slow
+      budget_reallocation_approval: 3  # No HITL support
+      pii_compliance: 4
+      customer_support_memory: 10      # Best: Remembers context across days/weeks
+      ad_image_generation: 2
+
+  pydantic_ai:
+    name: "PydanticAI"
+    summary: "Type-safe agent framework by Pydantic. Best for structured data and strict validations."
+    production_ready: true
+    features:
+      hitl: false
+      hitl_type: "not supported"
+      memory: false
+      memory_type: "stateless"
+      tool_use: true
+      multimodal: true
+      scalability: "high"
+      multi_agent: "delegation"   # Agents calling other agents as tools (Function-call delegation)
+
+    use_case_fit:
+      send_bulk_messages: 5
+      budget_reallocation_approval: 6
+      pii_compliance: 10               # Best: Strict Pydantic input/output validation
+      customer_support_memory: 3       # Requires external memory setup
+      ad_image_generation: 6
+
+  dify:
+    name: "Dify"
+    summary: "Low-code application builder. Best for visual building and quick API exposure."
+    production_ready: true
+    features:
+      hitl: true
+      hitl_type: "visual manual review nodes"
+      memory: true
+      memory_type: "built-in session db"
+      tool_use: true
+      multimodal: true
+      scalability: "medium"
+      multi_agent: "visual_sequential" # Drag-and-drop sequential flow and simple routing
+
+    use_case_fit:
+      send_bulk_messages: 8            # Easy to configure visual API nodes
+      budget_reallocation_approval: 8  # Good visual approval gates
+      pii_compliance: 4
+      customer_support_memory: 8       # Built-in session DB works out of the box
+      ad_image_generation: 8           # Native image upload/display widgets
+
+# ══════════════════════════════════════════════════════════════
+# OPERATIONAL PROBLEMS CATALOG (المشكلات المحددة للـ Agents)
+# ══════════════════════════════════════════════════════════════
+
+use_cases:
+
+  send_bulk_messages:
+    name: "Send Automated Messages (Bulk WhatsApp/Email)"
+    arabic: "إرسال رسائل تسويقية تلقائية للعملاء"
+    description: "تبي تبعت رسائل واتساب أو إيميل للعملاء تلقائياً بناءً على أكشن معين (طلب جديد، سلة متروكة). مش محتاج أي موافقة بشرية، ومحتاج سرعة وأداء عالي."
+    key_requirements:
+      - "سرعة وأداء عالي (Low latency)"
+      - "بدون تدخل بشري (No Human-in-the-Loop)"
+      - "ربط سهل بـ APIs الخارجية (WhatsApp/Sendgrid)"
+    top_frameworks: ["agno", "dify"]
+    avoid: ["letta", "swarm"]
+    
+    # Golden Output Preview from a real agent run:
+    golden_preview:
+      framework: "Agno"
+      snippet: |
+        [API Client] Connected to WhatsApp Business Gateway.
+        [Agent Action] Dispatching bulk converting message template:
+        "أهلاً {name}! 🌙 بمناسبة شهر رمضان الكريم، سلة التسوق الخاصة بك في 'دكان' لسه في انتظارك.
+        استخدم كود: RAMADAN20 للحصول على خصم 20% وشحن مجاني فوراً! 🚗
+        رابط السلة: https://dokkan.com/cart"
+        [Status] 1450 messages dispatched successfully. Average latency: 98ms. Failures: 0.
+
+  budget_reallocation_approval:
+    name: "Budget Reallocation & Verification"
+    arabic: "اعتماد الميزانية وإعادة توزيعها"
+    description: "الـ Agent بيراقب الحملة ويعدل الصرف بين القنوات. التعديل ده حساس ومحتاج موافقة بشرية إجبارية قبل أي عملية صرف فعلية لمنع الخسائر."
+    key_requirements:
+      - "وجود نظام موافقة بشرية إجبارية (Human-in-the-Loop)"
+      - "دقة عالية في الحسابات والأرقام"
+      - "إمكانية إيقاف واستكمال السيناريو (Pause/Resume)"
+    top_frameworks: ["crewai", "langgraph", "dify"]
+    avoid: ["agno", "letta", "swarm"]
+    
+    golden_preview:
+      framework: "CrewAI"
+      snippet: |
+        [Agent: AnalyticsAgent] Target CPA exceeded on SnapChat Ads (CPA: $18.5 vs Target: $10).
+        [Agent: AnalyticsAgent] Suggestion: Reallocate $2,500 from Snapchat to Meta Instagram Stories (CPA: $6.2).
+        [Agent: CampaignCommander] Generating human approval gate...
+        [HITL Port] WARNING: Budget modification exceeds auto-limit ($500). Pause execution.
+        [HITL Port] Requesting approval from Marketing Manager (Ahmed)...
+        [HITL Port] Approval Received: TRUE (Reason: Confirmed Snapchat underperformance).
+        [Agent: CampaignCommander] Resuming task. Executed budget transfer via Meta Marketing API.
+
+  pii_compliance:
+    name: "Customer Privacy & PII Protection"
+    arabic: "حماية خصوصية بيانات العملاء وسرية الهويات"
+    description: "حجب أرقام الهويات، التليفونات، والبيانات الحساسة للعملاء لمنع تسريبها للـ LLMs العامة والالتزام بقانون البيانات السعودي والمصري."
+    key_requirements:
+      - "فلترة وتدقيق صارم للبيانات (Data Validation)"
+      - "أمان عالي (Strict Security)"
+      - "منع التسريبات (No Hallucinations on sensitive data)"
+    top_frameworks: ["pydantic_ai", "langgraph"]
+    avoid: ["swarm", "flowise"]
+    
+    golden_preview:
+      framework: "PydanticAI"
+      snippet: |
+        [Input Text] "العميل محمد أحمد، رقم الهوية الوطنية 1083928172 ورقم الهاتف 0501234567 اشترى بمبلغ 500 ريال."
+        [Agent PiiGuard] Parsing input through Pydantic Schema validation...
+        [Agent PiiGuard] Match Found: saudi_national_id [1083928172] -> REDACTED
+        [Agent PiiGuard] Match Found: phone_number [0501234567] -> REDACTED
+        [Output Text] "العميل [اسم_محجوب]، رقم الهوية الوطنية [هوية_محجوبة] ورقم الهاتف [هاتف_محجوب] اشترى بمبلغ 500 ريال."
+        [Validation Status] 100% compliant with Saudi PDPL.
+
+  customer_support_memory:
+    name: "Customer History-Aware Support"
+    arabic: "دعم العملاء مع تذكر سياق المحادثات السابقة"
+    description: "إيجنت خدمة عملاء يقدر يفتكر العميل اشترى إيه الأسبوع اللي فات، واشتكى من إيه قبل كده، ويرد عليه بناءً على تاريخه الكامل."
+    key_requirements:
+      - "ذاكرة ممتدة لا نهائية (Unbounded Persistent Memory)"
+      - "حفظ حالة العميل عبر الجلسات (Cross-session persistence)"
+    top_frameworks: ["letta", "langgraph", "dify"]
+    avoid: ["swarm", "pydantic_ai"]
+    
+    golden_preview:
+      framework: "Letta"
+      snippet: |
+        [Session Start] Customer ID: 991823 (Sara)
+        [Memory Check] Letta Core Memory retrieved:
+          - Recall: Purchased 'Ramadan Abaya' on May 15.
+          - Context: Complained about delivery delay (resolved).
+        [Customer Query] "لو سمحتوا الأوردر بتاعي هيوصل متى؟"
+        [Letta Agent Response] "أهلاً يا سارة! 🌙 العباية الرمضانية اللي اشتريتيها يوم 15 مايو في مرحلة التوصيل حالياً مع شركة الشحن وهتوصلك بكره إن شاء الله. ونعتذر لو حصل أي تأخير."
+
+  ad_image_generation:
+    name: "Multimodal Ad Creative Generation"
+    arabic: "توليد تصاميم إعلانية مبتكرة (نص وصور)"
+    description: "توليد نصوص إعلانية وربطها بنماذج توليد الصور (DALL-E / Midjourney) عشان تطلع بوستات جاهزة للنشر."
+    key_requirements:
+      - "دعم النماذج متعددة الوسائط (Multimodal Support)"
+      - "ربط أدوات توليد الصور وسهولة معالجة الصور"
+    top_frameworks: ["agno", "dify", "langgraph"]
+    avoid: ["letta", "pydantic_ai"]
+    
+    golden_preview:
+      framework: "Agno"
+      snippet: |
+        [Input Product] Image of 'Traditional Ramadan Lantern (فانوس رمضان)'
+        [Vision Model] Analyzing image features... Detected: Lantern, Brass, Warm yellow lighting, Vintage.
+        [Agent] Generating bilingual ad copy:
+        "أضئ منزلك ببهجة الشهر الفضيل! 🌟 فانوس رمضان النحاسي التقليدي متوفر الآن بخصم خاص."
+        [Tool Call] Triggering DALL-E-3 tool with prompt: "Vintage brass Ramadan lantern lighting up a modern cozy living room, warm colors, photorealistic, 4k"
+        [Output] Ad Copy + Image URL generated successfully.

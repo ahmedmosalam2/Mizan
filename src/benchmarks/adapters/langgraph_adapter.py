@@ -96,8 +96,10 @@ class LanggraphAdapter(BaseFrameworkAdapter):
         for i, spec in enumerate(agent_specs):
             node_name = f"agent_{spec.name}"
             node_names.append(node_name)
-            # Capture spec in closure
-            builder.add_node(node_name, lambda state, s=spec: agent_node(state, s))
+            # Capture spec in closure — must use async wrapper since agent_node is async
+            async def _make_node(state, s=spec):
+                return await agent_node(state, s)
+            builder.add_node(node_name, _make_node)
 
         # Sequential edges
         builder.add_edge(START, node_names[0])

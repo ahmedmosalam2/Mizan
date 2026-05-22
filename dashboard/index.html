@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mizan Dashboard — AI Framework Benchmark</title>
+<meta name="description" content="Compare 20 AI agentic frameworks across 7 dimensions for MENA e-commerce">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0a0e1a;--surface:#111827;--surface2:#1e293b;--surface3:#283548;
+--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+--accent:#6366f1;--accent2:#818cf8;--green:#22c55e;--red:#ef4444;
+--amber:#f59e0b;--cyan:#06b6d4;--pink:#ec4899;--purple:#a855f7;
+--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.4);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* Header */
+.header{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%);padding:2rem 2.5rem;border-bottom:1px solid var(--border)}
+.header h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#c7d2fe,#a5b4fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px}
+.header p{color:var(--text2);margin-top:.3rem;font-size:.9rem}
+.header-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.header-actions{display:flex;gap:.75rem}
+.btn{padding:.6rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:.85rem;font-weight:500;transition:all .2s}
+.btn:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+.btn-primary{background:var(--accent);border-color:var(--accent)}
+
+/* Stats Bar */
+.stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;padding:1.5rem 2.5rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;transition:all .3s}
+.stat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.stat-value{font-size:1.8rem;font-weight:800;margin-top:.3rem;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-sub{font-size:.75rem;color:var(--text2);margin-top:.2rem}
+
+/* Main Grid */
+.main{padding:1.5rem 2.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:1100px){.main{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .3s}
+.card:hover{border-color:var(--accent2);box-shadow:0 0 30px rgba(99,102,241,.1)}
+.card-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.card-title{font-size:1rem;font-weight:700;color:var(--text)}
+.card-badge{font-size:.7rem;padding:.25rem .6rem;border-radius:20px;background:var(--accent);color:white;font-weight:600}
+.card-body{padding:1.5rem}
+.card-full{grid-column:1/-1}
+
+/* Leaderboard Table */
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{text-align:left;padding:.8rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border)}
+.lb-table td{padding:.8rem 1rem;border-bottom:1px solid rgba(51,65,85,.3);font-size:.85rem}
+.lb-table tr:hover td{background:rgba(99,102,241,.05)}
+.lb-rank{font-weight:800;font-size:1.1rem;width:40px}
+.lb-rank.gold{color:#fbbf24}.lb-rank.silver{color:#94a3b8}.lb-rank.bronze{color:#cd7f32}
+.lb-fw{font-weight:600}
+.lb-score{font-weight:700;font-size:1rem}
+.lb-dim{font-size:.8rem;color:var(--text2)}
+.score-bar{height:6px;border-radius:3px;background:var(--surface3);overflow:hidden;min-width:60px}
+.score-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.score-high{background:linear-gradient(90deg,var(--green),#4ade80)}
+.score-mid{background:linear-gradient(90deg,var(--amber),#fbbf24)}
+.score-low{background:linear-gradient(90deg,var(--red),#f87171)}
+
+/* Radar Chart */
+.radar-container{display:flex;justify-content:center;align-items:center;min-height:350px}
+svg text{font-family:'Inter',sans-serif}
+
+/* Dimension Cards */
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.dim-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;transition:all .3s}
+.dim-card:hover{border-color:var(--accent);transform:scale(1.02)}
+.dim-name{font-weight:700;font-size:.9rem;margin-bottom:.5rem}
+.dim-score-big{font-size:2rem;font-weight:800;margin:.3rem 0}
+.dim-weight{font-size:.7rem;color:var(--text3)}
+.dim-bar{height:8px;border-radius:4px;background:var(--surface3);margin-top:.8rem;overflow:hidden}
+.dim-fill{height:100%;border-radius:4px;transition:width 1s ease}
+
+/* File selector */
+.file-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.5rem 1rem;border-radius:8px;font-size:.85rem;font-family:'Inter',sans-serif}
+.file-select:focus{outline:none;border-color:var(--accent)}
+
+/* Empty state */
+.empty{text-align:center;padding:4rem 2rem}
+.empty h2{font-size:1.5rem;margin-bottom:1rem;color:var(--text2)}
+.empty p{color:var(--text3);max-width:500px;margin:0 auto}
+
+/* Colors for frameworks */
+.fw-colors{--c0:#6366f1;--c1:#ec4899;--c2:#06b6d4;--c3:#22c55e;--c4:#f59e0b;--c5:#a855f7;--c6:#ef4444;--c7:#14b8a6}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.animate{animation:fadeIn .5s ease forwards;opacity:0}
+.animate:nth-child(1){animation-delay:.05s}
+.animate:nth-child(2){animation-delay:.1s}
+.animate:nth-child(3){animation-delay:.15s}
+.animate:nth-child(4){animation-delay:.2s}
+.animate:nth-child(5){animation-delay:.25s}
+
+/* Advisor Styles */
+.advisor-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:1.5rem;margin-top:1rem}
+@media(max-width:900px){.advisor-grid{grid-template-columns:1fr}}
+.advisor-controls{background:var(--surface2);padding:1.5rem;border-radius:var(--radius);border:1px solid var(--border)}
+.advisor-rec{background:var(--surface2);padding:1.5rem;border-radius:var(--radius);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between}
+.slider-group{margin-bottom:1.2rem}
+.slider-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--text2);margin-bottom:.4rem;font-weight:600}
+.slider-input{width:100%;accent-color:var(--accent);background:var(--surface3);height:6px;border-radius:3px;appearance:none;outline:none}
+.slider-input::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent2);cursor:pointer}
+.preset-btn{padding:.5rem 1rem;border-radius:6px;font-size:.8rem;background:var(--surface3);border:1px solid var(--border);color:var(--text2);cursor:pointer;margin-right:.5rem;margin-bottom:.5rem;transition:all .2s;font-weight:600}
+.preset-btn:hover{border-color:var(--accent);color:var(--text)}
+.preset-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
+.rec-box{background:rgba(99,102,241,.06);border:1px dashed var(--accent);border-radius:8px;padding:1.2rem;margin-top:1.5rem}
+.rec-title{font-size:1rem;font-weight:800;color:var(--accent2);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.rec-text{font-size:.85rem;line-height:1.6;color:var(--text2)}
+.match-item{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.match-pct{font-weight:800;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="header">
+ <div class="header-row">
+  <div>
+   <h1>Mizan Dashboard</h1>
+   <p>AI Agentic Framework Benchmark — MENA E-Commerce Scenarios</p>
+  </div>
+  <div class="header-actions">
+   <select id="fileSelect" class="file-select" onchange="loadSelected()"></select>
+   <label class="btn btn-primary" id="uploadBtn">
+    Upload JSON
+    <input type="file" accept=".json" style="display:none" onchange="handleUpload(event)">
+   </label>
+  </div>
+ </div>
+</div>
+
+<div class="stats-bar" id="statsBar"></div>
+<div class="main" id="mainContent">
+ <div class="empty card-full card"><div class="card-body empty">
+  <h2>No Benchmark Data Loaded</h2>
+  <p>Upload a benchmark JSON file or select one from the dropdown. Run a benchmark first:<br><code>PYTHONPATH=src python -m benchmarks.runner --frameworks mock --mock</code></p>
+ </div></div>
+</div>
+
+<script>
+const DIMS=['orchestration','tool_use','safety','human_in_the_loop','memory','observability','multimodal'];
+const DIM_LABELS={orchestration:'Orchestration',tool_use:'Tool Use',safety:'Safety & Privacy',human_in_the_loop:'Human-in-Loop',memory:'Memory & State',observability:'Observability',multimodal:'Multimodal'};
+const DIM_ICONS={orchestration:'🔀',tool_use:'🔧',safety:'🛡️',human_in_the_loop:'👤',memory:'🧠',observability:'📊',multimodal:'🎨'};
+const FW_COLORS=['#6366f1','#ec4899','#06b6d4','#22c55e','#f59e0b','#a855f7','#ef4444','#14b8a6','#f97316','#8b5cf6'];
+
+let DATA=null;
+
+const PRESETS={
+  omnichannel:{
+    label:"Omnichannel Marketing Campaign",
+    arabic:"حملة تسويق متعددة القنوات (رمضان)",
+    desc:"Multi-channel, bilingual content at scale, multi-agent coordination, real-time budget reallocation, and human approval gates. Exactly the Ramadan campaign scenario.",
+    complexity:"high",
+    scalability:"medium",
+    vals:{orchestration:9,tool_use:8,safety:5,human_in_the_loop:9,memory:6,observability:8,multimodal:9}
+  },
+  customer_service:{
+    label:"Enterprise Customer Service",
+    arabic:"دعم العملاء المؤسسي",
+    desc:"Deep contextual memory (recall past conversations), PII compliance, human escalation on disputes. Heavy on memory & safety.",
+    complexity:"medium",
+    scalability:"high",
+    vals:{orchestration:5,tool_use:7,safety:9,human_in_the_loop:7,memory:10,observability:7,multimodal:2}
+  },
+  compliance:{
+    label:"Regulatory Compliance & PII Guard",
+    arabic:"نظام امتثال تنظيمي وحماية بيانات",
+    desc:"Saudi PDPL + Egypt Law 151. Critical PII detection, audit logging, data localization. Safety is everything.",
+    complexity:"low",
+    scalability:"low",
+    vals:{orchestration:3,tool_use:4,safety:10,human_in_the_loop:6,memory:4,observability:9,multimodal:1}
+  },
+  analytics:{
+    label:"Real-Time Analytics & Optimization",
+    arabic:"تحليلات وتحسين الحملات في الوقت الفعلي",
+    desc:"Monitoring campaign KPIs, executing Python analytics, A/B testing, triggering budget changes. Heavy observability and tool use.",
+    complexity:"medium",
+    scalability:"high",
+    vals:{orchestration:6,tool_use:9,safety:3,human_in_the_loop:5,memory:7,observability:10,multimodal:4}
+  },
+  custom:{
+    label:"Custom Use Case",
+    arabic:"حالة استخدام مخصصة",
+    desc:"Drag the sliders to match your exact requirements. The advisor will rank frameworks in real-time.",
+    complexity:"custom",
+    scalability:"custom",
+    vals:{orchestration:5,tool_use:5,safety:5,human_in_the_loop:5,memory:5,observability:5,multimodal:5}
+  }
+};
+
+let activePreset='omnichannel';
+
+// Load from API
+async function init(){
+ const sel=document.getElementById('fileSelect');
+ try{
+  const r=await fetch('/api/results');
+  if(r.ok){
+   const files=await r.json();
+   files.forEach(f=>{const o=document.createElement('option');o.value=f.path;o.textContent=f.name;sel.appendChild(o)});
+   if(files.length>0){sel.value=files[0].path;loadSelected()}
+  }
+ }catch(e){
+  // Try loading from relative path (static file mode)
+  try{
+   const r2=await fetch('benchmark_results/');
+   if(r2.ok){const html=await r2.text();const fs=[...html.matchAll(/href="([^"]*\.json)"/g)].map(m=>m[1]);
+   fs.forEach(f=>{const o=document.createElement('option');o.value='benchmark_results/'+f;o.textContent=f;sel.appendChild(o)});
+   if(fs.length>0){sel.value='benchmark_results/'+fs[fs.length-1];loadSelected()}}
+  }catch(e2){console.log('Upload a JSON file to get started')}
+ }
+}
+
+function loadSelected(){
+ const url=document.getElementById('fileSelect').value;
+ if(!url)return;
+ fetch(url).then(r=>r.json()).then(d=>{DATA=d;render()}).catch(e=>console.error(e));
+}
+
+function handleUpload(e){
+ const file=e.target.files[0];if(!file)return;
+ const reader=new FileReader();
+ reader.onload=ev=>{
+  try{DATA=JSON.parse(ev.target.result);render();
+   const sel=document.getElementById('fileSelect');
+   const o=document.createElement('option');o.value='uploaded';o.textContent=file.name;sel.appendChild(o);sel.value='uploaded';
+  }catch(err){alert('Invalid JSON')}
+ };
+ reader.readAsText(file);
+}
+
+function render(){
+ if(!DATA||!DATA.ranking)return;
+ renderStats();
+ const main=document.getElementById('mainContent');
+ main.innerHTML='';
+
+ // Leaderboard
+ const lb=mkCard('Leaderboard','card-full',DATA.ranking.length+' frameworks');
+ lb.querySelector('.card-body').innerHTML=renderLeaderboard();
+ main.appendChild(lb);
+
+ // === ARCHITECTURAL ADVISOR (the core value of Mizan) ===
+ const adv=mkCard('Mizan Architectural Advisor — اختار الـ Framework الصح لمشروعك','card-full');
+ adv.querySelector('.card-body').innerHTML=buildAdvisorHTML();
+ main.appendChild(adv);
+ setTimeout(()=>calcAdvisor(),50);
+
+ // Radar Chart
+ const radar=mkCard('Dimension Comparison','');
+ radar.querySelector('.card-body').innerHTML='<div class="radar-container">'+renderRadar()+'</div>';
+ main.appendChild(radar);
+
+ // Best per dimension
+ const best=mkCard('Best per Dimension','');
+ best.querySelector('.card-body').innerHTML=renderBestDims();
+ main.appendChild(best);
+
+ // Per-framework dimension breakdown
+ const dims=mkCard('Dimension Breakdown','card-full');
+ dims.querySelector('.card-body').innerHTML='<div class="dim-grid">'+renderDimCards()+'</div>';
+ main.appendChild(dims);
+}
+
+function mkCard(title,cls,badge){
+ const d=document.createElement('div');d.className='card animate '+(cls||'');
+ d.innerHTML=`<div class="card-header"><span class="card-title">${title}</span>${badge?'<span class="card-badge">'+badge+'</span>':''}</div><div class="card-body"></div>`;
+ return d;
+}
+
+function renderStats(){
+ const r=DATA.ranking;
+ const best=r[0];
+ const totalTokens=r.reduce((s,f)=>s+f.total_tokens,0);
+ const totalCost=r.reduce((s,f)=>s+f.total_cost_usd,0);
+ const avgScore=r.reduce((s,f)=>s+f.total_score,0)/r.length;
+ document.getElementById('statsBar').innerHTML=`
+  <div class="stat-card animate"><div class="stat-label">Frameworks Tested</div><div class="stat-value">${r.length}</div><div class="stat-sub">of 20 available</div></div>
+  <div class="stat-card animate"><div class="stat-label">Top Framework</div><div class="stat-value">${best.framework}</div><div class="stat-sub">Score: ${best.total_score.toFixed(2)}/10</div></div>
+  <div class="stat-card animate"><div class="stat-label">Average Score</div><div class="stat-value">${avgScore.toFixed(1)}</div><div class="stat-sub">across all frameworks</div></div>
+  <div class="stat-card animate"><div class="stat-label">Total Tokens</div><div class="stat-value">${totalTokens.toLocaleString()}</div><div class="stat-sub">$${totalCost.toFixed(4)} USD</div></div>
+  <div class="stat-card animate"><div class="stat-label">Evaluated</div><div class="stat-value">${new Date(DATA.evaluated_at).toLocaleDateString()}</div><div class="stat-sub">${new Date(DATA.evaluated_at).toLocaleTimeString()}</div></div>`;
+}
+
+function scoreClass(s){return s>=7?'score-high':s>=4?'score-mid':'score-low'}
+
+function renderLeaderboard(){
+ let h='<table class="lb-table"><thead><tr><th>Rank</th><th>Framework</th><th>Score</th>';
+ DIMS.forEach(d=>h+=`<th>${DIM_LABELS[d]}</th>`);
+ h+='<th>Tokens</th><th>Cost</th></tr></thead><tbody>';
+ DATA.ranking.forEach((f,i)=>{
+  const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  h+=`<tr><td class="lb-rank ${rc}">#${f.rank}</td><td class="lb-fw" style="color:${FW_COLORS[i%FW_COLORS.length]}">${f.framework}</td>`;
+  h+=`<td class="lb-score">${f.total_score.toFixed(2)}</td>`;
+  DIMS.forEach(d=>{
+   const s=f.dimensions[d]||0;
+   h+=`<td><div style="display:flex;align-items:center;gap:6px"><span class="lb-dim">${s.toFixed(1)}</span><div class="score-bar"><div class="score-fill ${scoreClass(s)}" style="width:${s*10}%"></div></div></div></td>`;
+  });
+  h+=`<td class="lb-dim">${f.total_tokens.toLocaleString()}</td><td class="lb-dim">$${f.total_cost_usd.toFixed(4)}</td></tr>`;
+ });
+ h+='</tbody></table>';return h;
+}
+
+function renderRadar(){
+ const cx=175,cy=175,r=130,n=DIMS.length;
+ let svg=`<svg width="350" height="380" viewBox="0 0 350 380">`;
+ // Grid
+ for(let ring=1;ring<=5;ring++){
+  const rr=r*ring/5;let pts=[];
+  for(let i=0;i<n;i++){const a=Math.PI*2*i/n-Math.PI/2;pts.push(`${cx+rr*Math.cos(a)},${cy+rr*Math.sin(a)}`);}
+  svg+=`<polygon points="${pts.join(' ')}" fill="none" stroke="#334155" stroke-width="${ring===5?1.5:0.5}"/>`;
+ }
+ // Axes + labels
+ for(let i=0;i<n;i++){
+  const a=Math.PI*2*i/n-Math.PI/2;
+  const x2=cx+r*Math.cos(a),y2=cy+r*Math.sin(a);
+  svg+=`<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#334155" stroke-width="0.5"/>`;
+  const lx=cx+(r+20)*Math.cos(a),ly=cy+(r+20)*Math.sin(a);
+  svg+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#94a3b8" font-size="10" font-weight="600">${DIM_LABELS[DIMS[i]]}</text>`;
+ }
+ // Data polygons
+ DATA.ranking.forEach((fw,fi)=>{
+  let pts=[];
+  for(let i=0;i<n;i++){
+   const a=Math.PI*2*i/n-Math.PI/2;
+   const val=(fw.dimensions[DIMS[i]]||0)/10*r;
+   pts.push(`${cx+val*Math.cos(a)},${cy+val*Math.sin(a)}`);
+  }
+  const c=FW_COLORS[fi%FW_COLORS.length];
+  svg+=`<polygon points="${pts.join(' ')}" fill="${c}22" stroke="${c}" stroke-width="2"/>`;
+ });
+ // Legend
+ let ly=360;
+ DATA.ranking.forEach((fw,fi)=>{
+  const lx=10+fi*100;
+  svg+=`<rect x="${lx}" y="${ly}" width="10" height="10" rx="2" fill="${FW_COLORS[fi%FW_COLORS.length]}"/>`;
+  svg+=`<text x="${lx+14}" y="${ly+9}" fill="#e2e8f0" font-size="11" font-weight="500">${fw.framework} (${fw.total_score.toFixed(1)})</text>`;
+ });
+ svg+='</svg>';return svg;
+}
+
+function renderBestDims(){
+ let h='<div style="display:grid;gap:.8rem">';
+ for(const[dim,info]of Object.entries(DATA.best_per_dimension)){
+  const s=info.score;
+  h+=`<div style="display:flex;align-items:center;gap:1rem;padding:.6rem;background:var(--surface2);border-radius:8px">
+   <span style="font-size:1.3rem">${DIM_ICONS[dim]||'📌'}</span>
+   <div style="flex:1"><div style="font-weight:600;font-size:.85rem">${DIM_LABELS[dim]||dim}</div></div>
+   <div style="text-align:right"><span style="font-weight:700;color:${FW_COLORS[0]}">${info.framework}</span>
+   <span style="margin-left:.5rem;font-weight:800;color:${s>=7?'var(--green)':s>=4?'var(--amber)':'var(--red)'}">${s}/10</span></div></div>`;
+ }
+ h+='</div>';return h;
+}
+
+function renderDimCards(){
+ if(!DATA.ranking.length)return'';
+ const fw=DATA.ranking[0];// Show top framework breakdown
+ let h='';
+ DIMS.forEach((d,i)=>{
+  const s=fw.dimensions[d]||0;
+  const col=s>=7?'var(--green)':s>=4?'var(--amber)':'var(--red)';
+  h+=`<div class="dim-card animate">
+   <div style="display:flex;justify-content:space-between;align-items:center">
+    <span class="dim-name">${DIM_ICONS[d]} ${DIM_LABELS[d]}</span>
+    <span class="dim-weight">Weight: ${[20,15,15,15,10,10,15][i]}%</span>
+   </div>
+   <div class="dim-score-big" style="color:${col}">${s.toFixed(1)}<span style="font-size:1rem;color:var(--text3)">/10</span></div>
+   <div class="dim-bar"><div class="dim-fill" style="width:${s*10}%;background:${col}"></div></div>
+  </div>`;
+ });
+ return h;
+}
+
+/* ================================================================
+   ARCHITECTURAL ADVISOR — Core Value of Mizan
+   Takes benchmark results + user's use case requirements
+   → ranks frameworks by weighted compatibility
+   → gives natural language recommendation
+   ================================================================ */
+
+function buildAdvisorHTML(){
+  let presetBtns='';
+  for(const[k,p]of Object.entries(PRESETS)){
+    const act=k===activePreset?'active':'';
+    presetBtns+=`<button class="preset-btn ${act}" onclick="setPreset('${k}')">${p.label}<br><small style="opacity:.7;font-weight:400">${p.arabic}</small></button>`;
+  }
+
+  let sliders='';
+  DIMS.forEach(d=>{
+    const v=PRESETS[activePreset].vals[d];
+    sliders+=`
+    <div class="slider-group">
+      <div class="slider-label">
+        <span>${DIM_ICONS[d]} ${DIM_LABELS[d]}</span>
+        <span id="lbl_${d}" style="color:var(--accent2);font-weight:800">${v}/10</span>
+      </div>
+      <input type="range" class="slider-input" id="sld_${d}" min="0" max="10" value="${v}" oninput="onSlider('${d}')">
+    </div>`;
+  });
+
+  return `
+  <p style="color:var(--text2);font-size:.9rem;margin-bottom:1.2rem;line-height:1.6">
+    <strong>الهدف:</strong> لما يجيلك Use Case جديد — بدل ما تخمن، إديها مواصفاتها وميزان يحسبلك أنهي Framework أنسب بناءً على النتايج الحقيقية.
+  </p>
+  <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem">${presetBtns}</div>
+  <div style="background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;padding:1rem;font-size:.85rem;color:var(--text2);margin-bottom:1.5rem" id="presetDesc">${PRESETS[activePreset].desc}</div>
+  <div class="advisor-grid">
+    <div class="advisor-controls">
+      <h3 style="font-size:.85rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:1.2rem">مواصفات مشروعك — Project Requirements</h3>
+      ${sliders}
+    </div>
+    <div class="advisor-rec">
+      <div>
+        <h3 style="font-size:.85rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:1.2rem">الملاءمة الهندسية — Compatibility Ranking</h3>
+        <div id="matchList"></div>
+      </div>
+      <div class="rec-box" id="recText"></div>
+    </div>
+  </div>`;
+}
+
+function setPreset(k){
+  activePreset=k;
+  // Re-render advisor in place
+  const adv=document.querySelector('#mainContent .card:nth-child(2) .card-body');
+  if(adv){adv.innerHTML=buildAdvisorHTML();setTimeout(()=>calcAdvisor(),50);}
+}
+
+function onSlider(d){
+  activePreset='custom';
+  const v=document.getElementById(`sld_${d}`).value;
+  document.getElementById(`lbl_${d}`).textContent=v+'/10';
+  calcAdvisor();
+}
+
+function calcAdvisor(){
+  if(!DATA||!DATA.ranking)return;
+
+  // Read current slider values
+  const weights={};
+  let total=0;
+  DIMS.forEach(d=>{
+    const el=document.getElementById(`sld_${d}`);
+    const v=el?parseInt(el.value):PRESETS[activePreset].vals[d];
+    weights[d]=v;
+    total+=v;
+  });
+  if(total===0)total=1;
+
+  // Score each framework by weighted compatibility
+  const matches=DATA.ranking.map((f,fi)=>{
+    let wsum=0;
+    DIMS.forEach(d=>{ wsum+=(f.dimensions[d]||0)*weights[d]; });
+    const pct=(wsum/(total*10))*100;
+    return{name:f.framework,pct,dims:f.dimensions,color:FW_COLORS[fi%FW_COLORS.length],idx:fi};
+  }).sort((a,b)=>b.pct-a.pct);
+
+  // Render match list
+  let ml='';
+  matches.forEach((m,i)=>{
+    const bar=Math.round(m.pct);
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'  ';
+    ml+=`<div class="match-item">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <span style="font-size:1.1rem">${medal}</span>
+        <span style="font-weight:700;color:${m.color}">${m.name}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <div class="score-bar" style="width:120px"><div class="score-fill" style="width:${bar}%;background:${m.color}"></div></div>
+        <span class="match-pct" style="color:${m.color};min-width:45px;text-align:right">${m.pct.toFixed(1)}%</span>
+      </div>
+    </div>`;
+  });
+  const ml_el=document.getElementById('matchList');
+  if(ml_el)ml_el.innerHTML=ml;
+
+  // Generate natural language recommendation
+  const top=matches[0];
+  const second=matches[1];
+  const preset=PRESETS[activePreset];
+  let rec='';
+
+  // Identify the dominant requirement
+  const topDims=[...DIMS].sort((a,b)=>weights[b]-weights[a]);
+  const dom1=topDims[0],dom2=topDims[1];
+
+  // Find which framework wins each critical dimension
+  const bestInDom1=matches.slice().sort((a,b)=>(b.dims[dom1]||0)-(a.dims[dom1]||0))[0];
+  const bestInDom2=matches.slice().sort((a,b)=>(b.dims[dom2]||0)-(a.dims[dom2]||0))[0];
+
+  // Complexity label
+  const avgWeight=total/DIMS.length;
+  const complexLabel=avgWeight>=7?'عالي التعقيد':avgWeight>=4?'متوسط التعقيد':'منخفض التعقيد';
+
+  rec=`<div class="rec-title">💡 التوصية الهندسية</div>`;
+  rec+=`<p class="rec-text">
+    الـ Use Case بتاعتك <strong>${complexLabel}</strong> — أعلى متطلباتها في <strong>${DIM_ICONS[dom1]} ${DIM_LABELS[dom1]}</strong> و <strong>${DIM_ICONS[dom2]} ${DIM_LABELS[dom2]}</strong>.
+    <br><br>`;
+
+  if(top.name===second.name || matches.length===1){
+    rec+=`الإطار الأنسب هو <strong style="color:${top.color}">${top.name}</strong> بنسبة ملاءمة <strong>${top.pct.toFixed(0)}%</strong>.`;
+  } else {
+    const gap=top.pct-second.pct;
+    if(gap>15){
+      rec+=`<strong style="color:${top.color}">${top.name}</strong> هو الخيار الواضح بفارق <strong>${gap.toFixed(0)}%</strong> عن التالي. استخدمه مباشرة.`;
+    } else {
+      rec+=`<strong style="color:${top.color}">${top.name}</strong> أفضل بنسبة <strong>${gap.toFixed(0)}%</strong> عن <strong style="color:${second.color}">${second.name}</strong>. 
+        الاتنين مقبولين — لو هتضيف features كتير بعدين، خد <strong style="color:${second.color}">${second.name}</strong> لأنه أكثر مرونة على المدى الطويل (Scalability).`;
+    }
+  }
+
+  // Add dimension-specific advice
+  if(weights.safety>=8){
+    rec+=`<br><br><strong>🛡️ تحذير:</strong> مشروعك يحتاج امتثال تنظيمي حرج — تأكد أن الـ Framework اللي بتختاره فيه native PII filtering أو هتحتاج تبنيه بنفسك. أفضل Framework في الـ Safety في نتايجك هو <strong style="color:${bestInDom1.color}">${bestInDom1.name}</strong>.`;
+  }
+  if(weights.observability>=8){
+    rec+=`<br><br><strong>📊 Scalability:</strong> لو هتوسع النظام وتضيف features، ركز على الـ Observability لأنها بتخليك تقدر تعمل debug وتتابع الـ performance وأنت بتكبر.`;
+  }
+  if(weights.human_in_the_loop>=8){
+    rec+=`<br><br><strong>👤 Human Approval Gates:</strong> مشروعك فيه checkpoints بشرية كتير — شيل الـ frameworks اللي مش بتدعم native pause/resume workflow.`;
+  }
+
+  rec+='</p>';
+  const rec_el=document.getElementById('recText');
+  if(rec_el)rec_el.innerHTML=rec;
+}
+
+init();
+</script>
+</body>
+</html>
