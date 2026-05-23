@@ -601,6 +601,11 @@ Examples:
         api_key = os.getenv("GOOGLE_API_KEY", "")
     elif provider.lower() == "anthropic":
         api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    elif provider.lower() == "ollama":
+        api_key = "ollama"  # Ollama doesn't need an API key
+        if args.llm_model == "llama-3.3-70b-versatile":
+            # Default Groq model — switch to local Ollama model
+            args.llm_model = "llama3.2"
 
     llm_config = {
         "provider": provider,
