@@ -15,7 +15,6 @@ class ScenarioType(str, Enum):
     OBSERVABILITY = "observability"
     MULTIMODAL = "multimodal"
 
-
 @dataclass
 class ToolSpec:
     """Specification for a tool to be provided to agents."""

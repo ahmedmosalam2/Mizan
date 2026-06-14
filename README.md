@@ -30,6 +30,26 @@ Each framework is tested across **7 evaluation dimensions** using identical scen
 
 ---
 
+## 📖 Architecture & Getting Started
+
+**New to the codebase?** Read these first:
+
+1. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Design philosophy, abstractions, and patterns
+   - Framework-agnostic architecture
+   - Core abstractions (Agent, Tool, Message, State, Orchestrator)
+   - Design patterns (Strategy, Chain of Responsibility, Observer, Builder)
+   - Phase 1-3 implementation roadmap
+
+2. **[QUICKSTART.md](QUICKSTART.md)** - 5-minute setup guide
+   - Install dependencies
+   - Run example tests and workflows
+   - Create your first agent
+   - Understand the abstractions through code
+
+**TL;DR**: The framework is built on explicit abstractions that are **framework-agnostic**. Each agent framework (CrewAI, LangGraph, Agno) is implemented as an adapter, not core logic. This enables fair comparison and switching without rewriting agents.
+
+---
+
 ## 📊 The 7 Evaluation Dimensions
 
 | # | Dimension | Weight | What It Tests |
