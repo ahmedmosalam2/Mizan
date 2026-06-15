@@ -1,37 +1,3 @@
-"""
-CrewAI Adapter — Maximum Feature Extraction
-============================================
-مبدأ: كل feature في CrewAI بتخدم مشكلتنا (Ramadan Campaign) بنستخدمها.
-
-NATIVE FEATURES USED:
-  ✅ Process.hierarchical + manager_llm
-  ✅ Process.sequential
-  ✅ Task(context=[...])          — task dependency chain
-  ✅ Task(output_pydantic=...)    — structured output مضمون
-  ✅ Task(guardrail=fn)           — output validation قبل القبول
-  ✅ Task(human_input=True)       — HITL pause حقيقي
-  ✅ Task(callback=fn)            — event بعد كل task
-  ✅ Crew(memory=True)            — short + long term (ChromaDB)
-  ✅ Crew(planning=True)          — planning pass قبل التنفيذ
-  ✅ Crew(step_callback=fn)       — trace حقيقي
-  ✅ Agent(cache=True)            — tool call caching
-  ✅ Agent(allow_delegation=True) — delegation بين agents
-  ✅ Knowledge (StringKnowledge)  — RAG على product catalog
-  ✅ CrewAI Flows                 — event-driven campaign orchestration
-  ✅ @start / @listen / @router   — conditional branching في الـ Flow
-
-MANUAL (CrewAI مش بتوفره):
-  ⚙️  PII regex patterns
-  ⚙️  Retry/fallback على channel deployment
-  ⚙️  Memory clean slate (shutil.rmtree)
-  ⚙️  HITL stdin mock (unittest.mock.patch)
-  ⚙️  PII accuracy scoring
-
-LIMITATIONS (موثّقة بصدق):
-  ❌ Multimodal — GPT-4o/Gemini فقط، Groq/Llama text-only
-  ❌ Streaming  — مفيش async streaming على crew.kickoff_async
-  ❌ Flow + memory — Flows مش بتورث memory من Crew عادي
-"""
 
 import re
 import json
@@ -53,13 +19,10 @@ from benchmarks.adapters.base_adapter import (
     TraceEntry,
 )
 
-# ═══════════════════════════════════════════════════════════════════════
-# Pydantic Output Models
-# [NATIVE] Task(output_pydantic=...) — CrewAI بترجع model مضمون مش string
-# ═══════════════════════════════════════════════════════════════════════
+
 
 class CampaignPlanOutput(BaseModel):
-    """Output مضمون من Dimension 1: Orchestration."""
+  
     campaign_name: str = Field(description="اسم الحملة")
     agent_assignments: Dict[str, str] = Field(
         description="مين مسؤول عن إيه: {agent_name: deliverable}"
@@ -430,6 +393,8 @@ class CrewaiAdapter(BaseFrameworkAdapter):
         super().__init__(framework_name="CrewAI")
         self.llm = None
         self._tool_call_count = 0
+        self._provider = "groq"
+        self._api_key = ""
 
     # ── Lifecycle ──────────────────────────────────────────────────
 
@@ -441,6 +406,10 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             provider = llm_config.get("provider", "groq")
             model    = llm_config.get("model", "llama-3.3-70b-versatile")
             api_key  = llm_config.get("api_key", "") or "mock_key"
+
+            # [NEW] حفظ إعدادات المزود للاستخدام في Embedder و Knowledge
+            self._provider = provider
+            self._api_key = api_key
             gateway  = os.getenv("LLM_GATEWAY_URL")
 
             if gateway:
@@ -512,6 +481,92 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             return StringKnowledgeSource(content=catalog_text)
         except ImportError:
             return None  # Knowledge API مش متاح في الـ version دي
+
+    def _get_embedder_config(self) -> Optional[Dict]:
+        """
+        [NEW] بتختار embedder مناسب بناءً على الـ provider المستخدم.
+        بدون ده → CrewAI هيحاول يستخدم OpenAI embeddings بشكل خفي
+        وده هيكسر لو مفيش OPENAI_API_KEY.
+        """
+        import os
+        provider = self._provider.lower()
+
+        if provider in ("openai",):
+            return {
+                "provider": "openai",
+                "config": {
+                    "model": "text-embedding-3-small",
+                    "api_key": self._api_key or os.getenv("OPENAI_API_KEY", ""),
+                },
+            }
+        elif provider in ("google", "gemini"):
+            return {
+                "provider": "google-generativeai",
+                "config": {
+                    "model_name": "gemini-embedding-001",
+                    "api_key": self._api_key or os.getenv("GOOGLE_API_KEY", ""),
+                },
+            }
+        elif provider == "ollama":
+            return {
+                "provider": "ollama",
+                "config": {
+                    "model": "mxbai-embed-large",
+                    "url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/api/embeddings"),
+                },
+            }
+        elif provider == "groq":
+            # Groq لا يوفر embedding API — نستخدم OpenAI كـ fallback
+            openai_key = os.getenv("OPENAI_API_KEY", "")
+            if openai_key:
+                return {
+                    "provider": "openai",
+                    "config": {"model": "text-embedding-3-small", "api_key": openai_key},
+                }
+            return None  # مفيش embedder متاح — Knowledge/Memory هيشتغل بالـ defaults
+        else:
+            # mock أو provider مش معروف — نرجع None
+            return None
+
+    def _get_search_tools(self) -> list:
+        """
+        [NEW] بتحاول تجيب أدوات بحث حقيقية من crewai_tools.
+        لو مفيش API keys → ترجع [] (graceful fallback).
+        """
+        import os
+        real_tools = []
+
+        # 1. SerperDevTool (Google Search)
+        if os.getenv("SERPER_API_KEY"):
+            try:
+                from crewai_tools import SerperDevTool
+                real_tools.append(SerperDevTool())
+                self.add_trace(TraceEntry(
+                    agent_name="system", action="search_tool_loaded",
+                    output_summary="SerperDevTool (Google Search) — active",
+                ))
+            except ImportError:
+                pass
+
+        # 2. ExaSearchTool (Semantic Web Search)
+        if not real_tools and os.getenv("EXA_API_KEY"):
+            try:
+                from crewai_tools import ExaSearchTool
+                real_tools.append(ExaSearchTool(highlights=True, type="auto"))
+                self.add_trace(TraceEntry(
+                    agent_name="system", action="search_tool_loaded",
+                    output_summary="ExaSearchTool (Semantic Search) — active",
+                ))
+            except ImportError:
+                pass
+
+        if not real_tools:
+            self.add_trace(TraceEntry(
+                agent_name="system", action="search_tool_loaded",
+                output_summary="No real search tools — using mock fallback only",
+            ))
+
+        return real_tools
 
     def _guardrail_arabic_content(self, output: Any) -> Tuple[bool, str]:
         """
@@ -624,7 +679,8 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             callback=self._task_callback,             # [NATIVE] event بعد الـ task
         )
 
-        crew = Crew(
+        embedder = self._get_embedder_config()
+        crew_kwargs = dict(
             agents=agents,
             tasks=[main_task],
             process=Process.hierarchical,             # [NATIVE] manager يوزع
@@ -634,6 +690,10 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             step_callback=self._step_callback,        # [NATIVE] trace كل step
             verbose=True,
         )
+        if embedder:
+            crew_kwargs["embedder"] = embedder        # [NEW] embedder مطابق للمزود
+
+        crew = Crew(**crew_kwargs)
 
         start = time.time()
         result = await crew.kickoff_async()
@@ -669,6 +729,17 @@ class CrewaiAdapter(BaseFrameworkAdapter):
 
         self._tool_call_count = 0
 
+        # [NEW] أدوات بحث حقيقية (SerperDev/Exa) لو متاحة
+        real_search_tools = self._get_search_tools()
+
+        # [NEW] KnowledgeConfig لتحسين دقة الـ RAG
+        knowledge_config = None
+        try:
+            from crewai.knowledge.knowledge_config import KnowledgeConfig
+            knowledge_config = KnowledgeConfig(results_limit=5, score_threshold=0.35)
+        except ImportError:
+            pass
+
         # [NATIVE] بنبني Knowledge من الـ product catalog
         product_data = [task.get("product", {})]
         knowledge_source = self._build_knowledge(product_data)
@@ -680,18 +751,29 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             (s for s in agent_specs if "Content" in s.name), agent_specs[0]
         )
 
+        # [NEW] دمج الأدوات: mock tools + real search tools
+        all_tools = crewai_tools + real_search_tools
+
         agent_kwargs = dict(
             role=content_spec.role,
             goal=content_spec.goal,
             backstory=content_spec.backstory,
             llm=self.llm,
-            tools=crewai_tools,
+            tools=all_tools,
             cache=True,       # [NATIVE] caching
             verbose=True,
         )
         # لو Knowledge متاح → نديها للـ agent
         if knowledge_source:
             agent_kwargs["knowledge_sources"] = [knowledge_source]
+        # [NEW] KnowledgeConfig لتحسين دقة البحث
+        if knowledge_config:
+            agent_kwargs["knowledge_config"] = knowledge_config
+
+        # [NEW] Embedder مخصص للمزود
+        embedder = self._get_embedder_config()
+        if embedder:
+            agent_kwargs["embedder"] = embedder
 
         content_agent = Agent(**agent_kwargs)
 
@@ -718,13 +800,16 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             callback=self._task_callback,
         )
 
-        crew = Crew(
+        crew_kwargs = dict(
             agents=[content_agent],
             tasks=[content_task],
             process=Process.sequential,
             step_callback=self._step_callback,
             verbose=True,
         )
+        if embedder:
+            crew_kwargs["embedder"] = embedder        # [NEW] embedder للـ Crew
+        crew = Crew(**crew_kwargs)
 
         start = time.time()
         result = await crew.kickoff_async()
@@ -1011,12 +1096,16 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             agent=customer_agent,
         )
 
-        crew_run1 = Crew(
+        embedder = self._get_embedder_config()
+        crew1_kwargs = dict(
             agents=[customer_agent], tasks=[session1_task],
             process=Process.sequential,
-            memory=True,   # [NATIVE] يحفظ في ChromaDB
+            memory=True,   # [NATIVE] STM + LTM + Entity Memory
             verbose=True,
         )
+        if embedder:
+            crew1_kwargs["embedder"] = embedder       # [NEW] embedder مطابق للمزود
+        crew_run1 = Crew(**crew1_kwargs)
         await crew_run1.kickoff_async()
 
         # ── Run 2: Session 2 — بدون history في الـ prompt ──────────
@@ -1032,12 +1121,15 @@ class CrewaiAdapter(BaseFrameworkAdapter):
             agent=customer_agent,
         )
 
-        crew_run2 = Crew(
+        crew2_kwargs = dict(
             agents=[customer_agent], tasks=[session2_task],
             process=Process.sequential,
-            memory=True,   # [NATIVE] يقرأ من ChromaDB
+            memory=True,   # [NATIVE] يقرأ من ChromaDB (STM + LTM + Entity)
             verbose=True,
         )
+        if embedder:
+            crew2_kwargs["embedder"] = embedder       # [NEW] نفس الـ embedder
+        crew_run2 = Crew(**crew2_kwargs)
 
         start = time.time()
         result = await crew_run2.kickoff_async()
