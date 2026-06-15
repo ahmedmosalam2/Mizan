@@ -13,8 +13,8 @@ Design Principles:
 - Dependency Injection: Wired dependencies, not hard-coded
 """
 
-from .agent import Agent, AgentRole, AgentState
-from .tool import Tool, ToolExecutionResult
+from .agent import Agent, AgentRole, AgentState, AgentCapabilities
+from .tool import Tool, ToolExecutionResult, ToolParameter, ToolCategory
 from .message import Message, MessageType
 from .state import SharedState
 from .orchestrator import Orchestrator
@@ -24,8 +24,11 @@ __all__ = [
     "Agent",
     "AgentRole",
     "AgentState",
+    "AgentCapabilities",
     "Tool",
     "ToolExecutionResult",
+    "ToolParameter",
+    "ToolCategory",
     "Message",
     "MessageType",
     "SharedState",
