@@ -15,10 +15,10 @@ Design Principles:
 
 from .agent import Agent, AgentRole, AgentState, AgentCapabilities
 from .tool import Tool, ToolExecutionResult, ToolParameter, ToolCategory
-from .message import Message, MessageType
-from .state import SharedState
-from .orchestrator import Orchestrator
-from .gates import ApprovalGate, GateStatus
+from .message import Message, MessageType, MessagePriority
+from .state import SharedState, StateOperation, StateChange
+from .orchestrator import Orchestrator, WorkflowExecution, WorkflowStatus
+from .gates import ApprovalGate, GateStatus, ApprovalManager, ApprovalDecision
 
 __all__ = [
     "Agent",
@@ -31,8 +31,15 @@ __all__ = [
     "ToolCategory",
     "Message",
     "MessageType",
+    "MessagePriority",
     "SharedState",
+    "StateOperation",
+    "StateChange",
     "Orchestrator",
+    "WorkflowExecution",
+    "WorkflowStatus",
     "ApprovalGate",
     "GateStatus",
+    "ApprovalManager",
+    "ApprovalDecision",
 ]

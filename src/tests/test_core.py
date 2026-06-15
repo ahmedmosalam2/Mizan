@@ -14,13 +14,13 @@ import pytest
 import asyncio
 from datetime import datetime, timedelta
 
-from ...core.abstractions import (
+from ..core.abstractions import (
     Agent, AgentRole, AgentState,
     Message, MessageType, MessagePriority,
     SharedState, StateOperation, StateChange,
     ApprovalGate, ApprovalManager, GateStatus, ApprovalDecision,
 )
-from ..agents import EchoAgent, CalculatorAgent, EchoTool, CalculatorTool
+from ..examples.agents import EchoAgent, CalculatorAgent, EchoTool, CalculatorTool
 
 
 # ═══════════════════════════════════════════════════════════════
