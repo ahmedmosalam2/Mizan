@@ -1,13 +1,3 @@
-"""
-Message abstraction - standardized communication between agents.
-
-All inter-agent communication flows through messages. This ensures:
-1. Traceability: every message is logged with timestamp and IDs
-2. Serialization: messages can be stored, replayed, or transmitted
-3. Type safety: structured message types prevent misunderstandings
-4. Observability: end-to-end message tracing
-"""
-
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, Optional, List
 from enum import Enum
@@ -56,22 +46,7 @@ class MessagePriority(Enum):
 
 @dataclass
 class Message:
-    """
-    Core message structure for inter-agent communication.
-    
-    Attributes:
-        message_id: Unique message identifier (for tracing)
-        message_type: Type of message
-        sender_id: ID of agent/component sending this message
-        recipient_id: ID of agent/component receiving this message (None = broadcast)
-        content: Main payload
-        context: Additional context (conversation ID, workflow ID, etc.)
-        priority: Processing priority
-        timestamp: When message was created
-        trace_id: For distributed tracing across agents
-        parent_message_id: If this is a response, ID of the message it responds to
-        metadata: Additional observability data
-    """
+
     
     message_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     message_type: MessageType = MessageType.TASK_REQUEST

@@ -1,15 +1,3 @@
-"""
-Human-in-the-loop approval gates.
-
-The workflow must pause at specific decision points and wait for human approval.
-This module implements flexible approval gate logic that supports:
-1. Single approver (e.g., marketing manager approves budget)
-2. Multiple approvers in parallel (e.g., marketing manager + compliance officer)
-3. Threshold-based gates (e.g., only require approval for budget > X)
-4. Time-limited approvals (e.g., auto-approve if not rejected within 1 hour)
-5. Callback handlers for integration with external notification systems
-"""
-
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Callable, Set
 from enum import Enum
@@ -44,21 +32,12 @@ class ApproverDecision:
 
 @dataclass
 class ApprovalGate:
-    """
-    A checkpoint where the workflow pauses for human approval.
-    
-    Example use cases:
-    - Content approval: marketing manager reviews generated ad copy
-    - Budget approval: only shifts > 20% of budget require approval
-    - Compliance review: compliance officer checks for PII
-    - Escalation: customer service hands off to human representative
-    """
     
     gate_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    gate_type: str = ""  # e.g., "content_review", "budget_approval"
-    action_description: str = ""  # What is being approved?
-    required_approvers: Set[str] = field(default_factory=set)  # User IDs
-    optional_approvers: Set[str] = field(default_factory=set)  # Bonus approvers
+    gate_type: str = ""
+    action_description: str = ""
+    required_approvers: Set[str] = field(default_factory=set)
+    optional_approvers: Set[str] = field(default_factory=set)
     
     # Decision rules
     require_unanimous: bool = True  # All required approvers must approve
@@ -97,14 +76,7 @@ class ApprovalGate:
         decision: ApprovalDecision,
         comment: Optional[str] = None,
     ) -> None:
-        """
-        Record an approver's decision.
-        
-        Args:
-            approver_id: ID of the approver
-            decision: Their decision (approved/rejected/modifications_requested)
-            comment: Optional comment
-        """
+  
         if self.is_resolved():
             raise RuntimeError(f"Gate {self.gate_id} is already resolved")
         
@@ -194,18 +166,10 @@ class ApprovalGate:
 
 
 class ApprovalManager:
-    """
-    Manages approval gates for the workflow.
-    
-    Responsibilities:
-    - Create approval gates based on business rules
-    - Track pending approvals
-    - Notify approvers
-    - Apply decisions to workflow
-    """
+
     
     def __init__(self):
-        """Initialize approval manager."""
+
         self.gates: Dict[str, ApprovalGate] = {}
         self._on_gate_created: Optional[Callable] = None
         self._on_gate_resolved: Optional[Callable] = None
@@ -220,21 +184,7 @@ class ApprovalManager:
         auto_approve_after: Optional[timedelta] = None,
         context: Optional[Dict[str, Any]] = None,
     ) -> ApprovalGate:
-        """
-        Create a new approval gate.
-        
-        Args:
-            gate_type: Type of gate (for routing notifications)
-            action_description: Human-readable description of what's being approved
-            required_approvers: User IDs who must approve
-            optional_approvers: User IDs who can optionally approve
-            require_unanimous: Whether all required approvers must approve
-            auto_approve_after: Automatically approve if no rejection within time
-            context: Additional context for approvers
-        
-        Returns:
-            ApprovalGate instance
-        """
+
         gate = ApprovalGate(
             gate_type=gate_type,
             action_description=action_description,
@@ -269,15 +219,7 @@ class ApprovalManager:
         decision: ApprovalDecision,
         comment: Optional[str] = None,
     ) -> None:
-        """
-        Record an approver's decision on a gate.
-        
-        Args:
-            gate_id: ID of the gate
-            approver_id: ID of the approver
-            decision: Their decision
-            comment: Optional comment
-        """
+
         gate = self.get_gate(gate_id)
         if not gate:
             raise ValueError(f"Gate {gate_id} not found")
