@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # ── 1. Primary Relational Store: PostgreSQL 16 ───────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: mizan_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mizan_campaigns
+      POSTGRES_USER: mizan_user
+      POSTGRES_PASSWORD: mizan_secure_pass_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mizan_user -d mizan_campaigns"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── 2. Short-Term State & Agent Caching: Redis 7 ───────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: mizan_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── 3. Queue & Event Broker: RabbitMQ ──────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: mizan_rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: mizan_admin
+      RABBITMQ_DEFAULT_PASS: mizan_mq_pass_2026
+    ports:
+      - "5672:5672"   # AMQP protocol
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── 4. Semantic Vector Store: Qdrant ──────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.9.0
+    container_name: mizan_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333" # HTTP REST API
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # ── 5. Distributed Tracing: Jaeger ─────────────────────────────────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: mizan_jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # Web UI
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  qdrant_data:
