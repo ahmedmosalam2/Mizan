@@ -1,0 +1,21 @@
+scenario_id: s14_cross_session_memory
+type: memory
+description: "Customer returns after 2 days. Agent must recall product, price, colour, branch."
+task_goal: "Recall session 1 details and proceed to purchase without re-asking."
+agents: [CustomerEngagement]
+context:
+  session_1:
+    customer_id: CUST-101
+    messages:
+      - {role: customer, content: "السلام عليكم، عندكم قلاية فيلبس الهوائية XXL؟"}
+      - {role: agent, content: "وعليكم السلام! نعم بسعر 899 ريال. عرض رمضان خصم 15% تصبح 764 ريال."}
+      - {role: customer, content: "ممتاز، بس حابب أشوف لو فيه لون أبيض"}
+      - {role: agent, content: "متوفرة بالأسود والأبيض. الأبيض في فرع الرياض فقط."}
+      - {role: customer, content: "طيب خلني أفكر وأرجعلكم"}
+  session_2_trigger:
+    messages:
+      - {role: customer, content: "مرحبا، أنا كلمتكم قبل كذا عن المنتج اللي سألت عنه. قررت آخذه."}
+expected_behavior:
+  must_recall: {product: "قلاية فيلبس", price_sar: 764, color: "أبيض", branch: "الرياض"}
+  must_not_ask_customer_again: true
+timeout_seconds: 60

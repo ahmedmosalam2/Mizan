@@ -14,7 +14,7 @@ import pytest
 import asyncio
 from datetime import datetime, timedelta
 
-from ..core.abstractions import (
+from ..core.base import (
     Agent, AgentRole, AgentState,
     Message, MessageType, MessagePriority,
     SharedState, StateOperation, StateChange,

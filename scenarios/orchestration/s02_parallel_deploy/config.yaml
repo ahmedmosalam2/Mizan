@@ -1,0 +1,17 @@
+scenario_id: s02_parallel_deploy
+type: orchestration
+description: "Deploy to 5 channels in parallel, aggregate results."
+task_goal: "Deploy to Meta KSA/EG, Google KSA, Snapchat KSA, WhatsApp KSA simultaneously."
+agents: [CampaignCommander, ChannelDeployer]
+context:
+  channels_to_deploy:
+    - {name: meta_ads, market: KSA, budget_sar: 20000}
+    - {name: meta_ads, market: EG, budget_egp: 80000}
+    - {name: google_ads, market: KSA, budget_sar: 12000}
+    - {name: snapchat, market: KSA, budget_sar: 8000}
+    - {name: whatsapp, market: KSA, budget_sar: 5000}
+  require_parallel: true
+expected_behavior:
+  must_use_parallel: true
+  min_channels_deployed: 4
+timeout_seconds: 90

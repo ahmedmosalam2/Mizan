@@ -1,0 +1,17 @@
+scenario_id: s04_event_driven_pause
+type: orchestration
+description: "React to KPI alert: pause Snapchat, escalate, await human decision."
+task_goal: "Snapchat ROAS dropped to 1.1x. Pause spend, escalate to Commander."
+agents: [CampaignCommander, AnalyticsEngine]
+context:
+  kpi_event:
+    type: KPI_ALERT
+    channel: snapchat
+    metric: roas
+    current_value: 1.1
+    threshold: 2.0
+expected_behavior:
+  must_pause_channel: snapchat
+  must_escalate: true
+  must_use_approval_gate: true
+timeout_seconds: 60

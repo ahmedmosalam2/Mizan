@@ -20,7 +20,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
 
-from benchmarks.adapters.base_adapter import (
+from benchmarks.models import (
     BaseFrameworkAdapter,
     ScenarioResult,
     AgentSpec,
@@ -92,7 +92,13 @@ ALL_SCENARIO_IDS = [
 def _load_adapter(framework_id: str) -> Optional[BaseFrameworkAdapter]:
     """Dynamically load a framework adapter by ID."""
     try:
-        module = importlib.import_module(f"benchmarks.adapters.{framework_id}_adapter")
+        import importlib.util
+        # Try package structure first (e.g., benchmarks.adapters.crewai)
+        if importlib.util.find_spec(f"benchmarks.adapters.{framework_id}"):
+            module = importlib.import_module(f"benchmarks.adapters.{framework_id}")
+        else:
+            module = importlib.import_module(f"benchmarks.adapters.{framework_id}_adapter")
+            
         # Convention: class name is {FrameworkId}Adapter with CamelCase
         class_name = "".join(w.capitalize() for w in framework_id.split("_")) + "Adapter"
         adapter_class = getattr(module, class_name)
@@ -584,13 +590,15 @@ Examples:
     parser.add_argument("--quiet", "-q", action="store_true", help="Suppress non-essential output")
     parser.add_argument("--campaign", type=str, default=None,
                         help="Path to custom campaign YAML file (your own content, products, channels)")
+    parser.add_argument("--mode", choices=["clean", "full"], default="full",
+                        help="Benchmark execution mode (default: full)")
     args = parser.parse_args()
 
     _setup_logging(verbose=args.verbose, quiet=args.quiet)
 
     # If --mock, force the mock provider
     provider = "mock" if args.mock else args.llm_provider
-    
+
     # Dynamically select the API key based on the provider
     api_key = ""
     if provider.lower() == "groq":
@@ -598,19 +606,25 @@ Examples:
     elif provider.lower() == "openai":
         api_key = os.getenv("OPENAI_API_KEY", "")
     elif provider.lower() in ["google", "gemini"]:
-        api_key = os.getenv("GOOGLE_API_KEY", "")
+        api_key = os.getenv("GOOGLE_API_KEY", "") or os.getenv("GEMINI_API_KEY", "")
     elif provider.lower() == "anthropic":
         api_key = os.getenv("ANTHROPIC_API_KEY", "")
     elif provider.lower() == "ollama":
         api_key = "ollama"  # Ollama doesn't need an API key
         if args.llm_model == "llama-3.3-70b-versatile":
-            # Default Groq model — switch to local Ollama model
             args.llm_model = "llama3.2"
+    elif provider.lower() == "openrouter":
+        api_key = os.getenv("OPENROUTER_API_KEY", "")
+        # LiteLLM needs the model prefixed with openrouter/
+        if not args.llm_model.startswith("openrouter/"):
+            args.llm_model = f"openrouter/{args.llm_model}"
+
 
     llm_config = {
         "provider": provider,
         "model": args.llm_model,
         "api_key": api_key,
+        "mode": args.mode,
     }
 
     runner = BenchmarkRunner(

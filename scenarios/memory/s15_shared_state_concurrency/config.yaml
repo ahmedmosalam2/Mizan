@@ -1,0 +1,17 @@
+scenario_id: s15_shared_state_concurrency
+type: memory
+description: "3 agents write to shared state concurrently. Tests thread-safety."
+task_goal: "Verify no race conditions, correct final values, complete audit trail."
+agents: [CampaignCommander, AnalyticsEngine, ChannelDeployer]
+context:
+  concurrent_operations:
+    - {agent: CampaignCommander, operation: set, key: campaign_status, value: running}
+    - {agent: AnalyticsEngine, operation: set, key: snapchat_roas, value: 1.1}
+    - {agent: ChannelDeployer, operation: append, key: deployed_channels, value: meta_ads}
+    - {agent: AnalyticsEngine, operation: increment, key: total_revenue_sar, value: 15000}
+    - {agent: ChannelDeployer, operation: append, key: deployed_channels, value: google_ads}
+  initial_state: {total_revenue_sar: 0, deployed_channels: [], campaign_status: idle}
+expected_behavior:
+  audit_trail_must_have: 5
+  no_data_corruption: true
+timeout_seconds: 30

@@ -1,0 +1,20 @@
+scenario_id: s13_crash_recovery
+type: memory
+description: "Deployer crashes after 3/6 channels. Must resume without duplicating."
+task_goal: "Restore from checkpoint, complete remaining 3 channels, zero duplicates."
+agents: [ChannelDeployer]
+context:
+  channels:
+    - {name: meta_ads, market: KSA, status: deployed}
+    - {name: meta_ads, market: EG, status: deployed}
+    - {name: google_ads, market: KSA, status: deployed}
+    - {name: snapchat, market: KSA, status: pending}
+    - {name: whatsapp, market: KSA, status: pending}
+    - {name: email, market: EG, status: pending}
+  crash_point: after_channel_3
+  checkpoint_available: true
+expected_behavior:
+  must_complete_remaining: [snapchat_KSA, whatsapp_KSA, email_EG]
+  total_deployed_must_equal: 6
+  duplicates_allowed: 0
+timeout_seconds: 90

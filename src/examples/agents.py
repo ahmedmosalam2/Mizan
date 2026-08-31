@@ -12,7 +12,7 @@ The "Echo" agent is the simplest possible agent that validates the architecture.
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-from ..core.abstractions import (
+from ..core.base import (
     Agent, AgentCapabilities, AgentRole, AgentState,
     Tool, ToolExecutionResult, ToolParameter, ToolCategory,
     Message, MessageType,

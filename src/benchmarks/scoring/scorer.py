@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from benchmarks.scoring.rubrics import RUBRICS
-from benchmarks.adapters.base_adapter import ScenarioResult
+from benchmarks.models import ScenarioResult
 from benchmarks.scenarios.test_data import EXPECTED_PII_DETECTIONS
 
 

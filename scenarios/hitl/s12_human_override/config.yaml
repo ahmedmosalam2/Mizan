@@ -1,0 +1,15 @@
+scenario_id: s12_human_override
+type: human_in_the_loop
+description: "Manager rejects AI recommendation, provides alternative. Agent must apply override."
+task_goal: "Agent applies human's modified allocation instead of original recommendation."
+agents: [AnalyticsEngine, CampaignCommander]
+context:
+  original_recommendation: {from_channel: snapchat, to_channel: meta_ads, amount_sar: 5000}
+  human_override:
+    decision: modifications_requested
+    feedback: "2000 لـ Meta، 1000 لـ Google، 1000 لـ WhatsApp، 1000 احتياطي"
+  simulated_approval: {decision: modifications_requested}
+expected_behavior:
+  must_apply_override: true
+  must_not_use_original_recommendation: true
+timeout_seconds: 90

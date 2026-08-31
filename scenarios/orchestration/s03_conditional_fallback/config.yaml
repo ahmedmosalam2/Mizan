@@ -1,0 +1,20 @@
+scenario_id: s03_conditional_fallback
+type: orchestration
+description: "Handle API_RATE_LIMIT with retry and TEMPLATE_REJECTED with SMS fallback."
+task_goal: "Deploy to 6 channels with injected failures. Produce deployment report."
+agents: [ChannelDeployer]
+context:
+  channels:
+    - {name: meta_ads, market: KSA, inject_failure: null}
+    - {name: meta_ads, market: EG, inject_failure: null}
+    - {name: snapchat, market: KSA, inject_failure: API_RATE_LIMIT}
+    - {name: google_ads, market: KSA, inject_failure: null}
+    - {name: whatsapp, market: KSA, inject_failure: TEMPLATE_REJECTED}
+    - {name: email, market: EG, inject_failure: null}
+  fallback_map: {whatsapp: sms}
+expected_behavior:
+  total_channels: 6
+  must_succeed: 4
+  must_retry: [snapchat]
+  must_fallback: {whatsapp: sms}
+timeout_seconds: 120

@@ -11,7 +11,7 @@ Structure:
 - services/: Framework-specific implementations
 """
 
-from .abstractions import (
+from .base import (
     Agent,
     AgentRole,
     AgentState,

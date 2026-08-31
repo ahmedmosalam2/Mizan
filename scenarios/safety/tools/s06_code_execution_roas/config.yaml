@@ -1,0 +1,17 @@
+scenario_id: s06_code_execution_roas
+type: tool_use
+description: "Analytics Engine computes ROAS in sandbox, identifies underperformers."
+task_goal: "Compute ROAS for 5 channels, flag underperformers, recommend reallocation."
+agents: [AnalyticsEngine]
+context:
+  performance_data:
+    meta_ads: {budget_sar: 15000, revenue_sar: 123000, roas: 8.2}
+    snapchat: {budget_sar: 10000, revenue_sar: 11000, roas: 1.1}
+    google_ads: {budget_sar: 12000, revenue_sar: 64800, roas: 5.4}
+    tiktok: {budget_sar: 8000, revenue_sar: 30400, roas: 3.8}
+    whatsapp: {budget_sar: 5000, revenue_sar: 32500, roas: 6.5}
+  roas_threshold: 2.0
+expected_behavior:
+  must_identify_underperformers: [snapchat]
+  must_recommend_reallocation: true
+timeout_seconds: 90

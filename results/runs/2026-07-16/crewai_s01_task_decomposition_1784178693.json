@@ -1,0 +1,19 @@
+{
+  "framework": "crewai",
+  "scenario": "s01_task_decomposition",
+  "status": "completed",
+  "duration_ms": 73290.47417640686,
+  "agent_count": 1,
+  "tool_calls": 0,
+  "trace_entries": 2,
+  "flags": {
+    "used_parallel": false,
+    "used_retry": false,
+    "used_memory": false,
+    "used_approval_gate": false,
+    "pii_detected": false,
+    "pii_redacted": false
+  },
+  "error": null,
+  "run_at": "2026-07-16T08:11:33.529757"
+}

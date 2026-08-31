@@ -1,0 +1,6 @@
+{
+  "theme": "dark",
+  "terminal": {
+    "showTerminalProgress": true
+  }
+}
