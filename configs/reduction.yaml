@@ -1,0 +1,22 @@
+# Benchmark Reduction & IRT Filtering Configuration
+reduction:
+  difficulty_metric: "pass_rate"  # p_j = mean(X[:, j])
+  primary_midrange_bounds: [0.30, 0.70]
+  fallback_midrange_bounds_1: [0.25, 0.75]
+  fallback_midrange_bounds_2: [0.15, 0.85]
+  min_selected_task_ratio: 0.10
+
+  baselines:
+    - "full"
+    - "midrange"
+    - "random"
+    - "stratified"
+
+  validation:
+    methods:
+      - "LOSO"  # Leave-One-Scaffold-Out
+      - "LOAO"  # Leave-One-Agent-Out
+      - "temporal_expanding_window"
+    bootstrap_iterations: 1000
+    confidence_interval: 0.95
+    target_rank_fidelity_spearman: 0.85

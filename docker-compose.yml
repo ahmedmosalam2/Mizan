@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # ── 1. Primary Relational Store: PostgreSQL 16 ───────────────────────────
+  # ── 1. Relational Store: PostgreSQL 16 (Users, Companies, Tasks, Runs, Messages) ──
   postgres:
     image: postgres:16-alpine
     container_name: mizan_postgres
@@ -37,7 +37,7 @@ services:
       timeout: 3s
       retries: 5
 
-  # ── 3. Queue & Event Broker: RabbitMQ ──────────────────────────────────────
+  # ── 3. Queue & Event Broker: RabbitMQ 3 ───────────────────────────────────
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: mizan_rabbitmq
@@ -47,7 +47,8 @@ services:
       RABBITMQ_DEFAULT_PASS: mizan_mq_pass_2026
     ports:
       - "5672:5672"   # AMQP protocol
-      - "15672:15672" # Management UI
+      - "15672:15672" # Web Management UI
+      - "15692:15692" # Prometheus metrics
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
@@ -56,18 +57,58 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── 4. Semantic Vector Store: Qdrant ──────────────────────────────────────
+  # ── 4. Object & Document Storage: MinIO (S3-Compatible for PDFs & Banners) ─
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: mizan_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: mizan_minio_admin
+      MINIO_ROOT_PASSWORD: mizan_minio_pass_2026
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web Console UI
+    volumes:
+      - minio_data:/data
+
+  # ── 5. Semantic Vector Knowledge Base: Qdrant ──────────────────────────────
   qdrant:
     image: qdrant/qdrant:v1.9.0
     container_name: mizan_qdrant
     restart: unless-stopped
     ports:
-      - "6333:6333" # HTTP REST API
+      - "6333:6333" # REST API
       - "6334:6334" # gRPC
     volumes:
       - qdrant_data:/qdrant/storage
 
-  # ── 5. Distributed Tracing: Jaeger ─────────────────────────────────────────
+  # ── 6. Search & Full-Text Structured Logs: OpenSearch ──────────────────────
+  opensearch:
+    image: opensearchproject/opensearch:2.14.0
+    container_name: mizan_opensearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200" # REST API
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+
+  # ── 7. Metrics Ingestion & Time-Series: Prometheus ─────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: mizan_prometheus
+    restart: unless-stopped
+    volumes:
+      - ./configs/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+
+  # ── 8. Distributed Tracing: Jaeger ─────────────────────────────────────────
   jaeger:
     image: jaegertracing/all-in-one:1.56
     container_name: mizan_jaeger
@@ -79,8 +120,29 @@ services:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
 
+  # ── 9. Observability Dashboards: Grafana ────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: mizan_grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000" # Web Dashboard
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - opensearch
+      - jaeger
+
 volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
+  minio_data:
   qdrant_data:
+  opensearch_data:
+  prometheus_data:
+  grafana_data:

@@ -1,0 +1,34 @@
+# Mizan Benchmark Configuration
+name: "mizan_ramadan_benchmark"
+version: "2.0.0"
+scenario: "ramadan_retail_omnichannel"
+target_markets:
+  - "KSA"
+  - "EG"
+dimensions:
+  - id: "orchestration"
+    weight: 0.20
+    name: "Multi-Agent Orchestration & Planning"
+  - id: "tool_use"
+    weight: 0.15
+    name: "Tool Use & External Integrations"
+  - id: "safety"
+    weight: 0.15
+    name: "Safety, PII & Regulatory Compliance"
+  - id: "hitl"
+    weight: 0.15
+    name: "Human-in-the-Loop & Approval Gates"
+  - id: "memory"
+    weight: 0.10
+    name: "Persistent & Cross-Session Memory"
+  - id: "observability"
+    weight: 0.10
+    name: "Observability, Tracing & Cost Accounting"
+  - id: "multimodal"
+    weight: 0.15
+    name: "Multimodal Vision & Ad Creatives"
+
+seed: 42
+default_timeout_seconds: 120
+max_trials_per_task: 3
+reproducibility_check: true

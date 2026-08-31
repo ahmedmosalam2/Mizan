@@ -1,0 +1,38 @@
+# Models Configuration & Pricing Matrix (USD per 1M tokens)
+models:
+  - id: "gpt-4o"
+    provider: "openai"
+    context_window: 128000
+    input_cost_per_1m: 2.50
+    output_cost_per_1m: 10.00
+    is_default: true
+
+  - id: "gpt-4o-mini"
+    provider: "openai"
+    context_window: 128000
+    input_cost_per_1m: 0.15
+    output_cost_per_1m: 0.60
+
+  - id: "claude-3-5-sonnet-20241022"
+    provider: "anthropic"
+    context_window: 200000
+    input_cost_per_1m: 3.00
+    output_cost_per_1m: 15.00
+
+  - id: "gemini-1.5-pro"
+    provider: "google"
+    context_window: 2000000
+    input_cost_per_1m: 1.25
+    output_cost_per_1m: 5.00
+
+  - id: "llama-3.3-70b-versatile"
+    provider: "groq"
+    context_window: 128000
+    input_cost_per_1m: 0.59
+    output_cost_per_1m: 0.79
+
+  - id: "llama3.2"
+    provider: "ollama"
+    context_window: 8192
+    input_cost_per_1m: 0.0
+    output_cost_per_1m: 0.0

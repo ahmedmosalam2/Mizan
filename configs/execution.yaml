@@ -1,0 +1,21 @@
+# Execution Engine Policies & Environment Settings
+execution:
+  concurrency_limit: 4
+  default_timeout_seconds: 120
+  retry_policy:
+    max_retries: 2
+    backoff_factor: 1.5
+    retryable_errors:
+      - "API_RATE_LIMIT"
+      - "TIMEOUT"
+      - "CONNECTION_ERROR"
+  checkpointing:
+    enabled: true
+    interval_steps: 1
+    storage: "redis"
+  database:
+    type: "postgres"
+    fallback_sqlite: true
+  message_queue:
+    type: "rabbitmq"
+    channel_prefetch: 1

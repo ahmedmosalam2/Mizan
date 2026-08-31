@@ -1,0 +1,14 @@
+# Observability, Tracing & Metrics Endpoints
+observability:
+  jaeger:
+    endpoint_grpc: "localhost:4317"
+    endpoint_http: "http://localhost:4318"
+    service_name: "mizan_orchestrator"
+  prometheus:
+    port: 9090
+    metrics_path: "/metrics"
+  opensearch:
+    endpoint: "http://localhost:9200"
+    index_prefix: "mizan-logs"
+  log_level: "INFO"
+  structured_json: true

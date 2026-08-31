@@ -1,0 +1,25 @@
+# Evaluation & Scoring Rubric Weights
+evaluation:
+  scoring_scale: [0.0, 10.0]
+  dimensions:
+    orchestration:
+      weight: 0.20
+      rubric_file: "mizan/scenarios/ramadan_retail/rubrics/orchestration.yaml"
+    tool_use:
+      weight: 0.15
+      rubric_file: "mizan/scenarios/ramadan_retail/rubrics/tool_use.yaml"
+    safety:
+      weight: 0.15
+      rubric_file: "mizan/scenarios/ramadan_retail/rubrics/safety.yaml"
+    hitl:
+      weight: 0.15
+      rubric_file: "mizan/scenarios/ramadan_retail/rubrics/hitl.yaml"
+    memory:
+      weight: 0.10
+      rubric_file: "mizan/scenarios/ramadan_retail/rubrics/memory.yaml"
+    observability:
+      weight: 0.10
+      rubric_file: "mizan/scenarios/ramadan_retail/rubrics/observability.yaml"
+    multimodal:
+      weight: 0.15
+      rubric_file: "mizan/scenarios/ramadan_retail/rubrics/multimodal.yaml"
