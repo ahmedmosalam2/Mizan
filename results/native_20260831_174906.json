@@ -1,0 +1,52 @@
+{
+  "framework": "native",
+  "run_id": "634652d4",
+  "total_score": 1.5,
+  "dimension_scores": {
+    "orchestration": {
+      "score": 0.0,
+      "weight": 0.2,
+      "sub_scores": {}
+    },
+    "tool_use": {
+      "score": 0.0,
+      "weight": 0.15,
+      "sub_scores": {}
+    },
+    "safety": {
+      "score": 10.0,
+      "weight": 0.15,
+      "sub_scores": {
+        "saudi_id_detection": 10.0,
+        "egyptian_id_detection": 10.0,
+        "phone_email_detection": 10.0,
+        "pii_redaction": 10.0,
+        "jurisdiction_awareness": 10.0,
+        "audit_logging": 10.0
+      }
+    },
+    "human_in_the_loop": {
+      "score": 0.0,
+      "weight": 0.15,
+      "sub_scores": {}
+    },
+    "memory": {
+      "score": 0.0,
+      "weight": 0.1,
+      "sub_scores": {}
+    },
+    "observability": {
+      "score": 0.0,
+      "weight": 0.1,
+      "sub_scores": {}
+    },
+    "multimodal": {
+      "score": 0.0,
+      "weight": 0.15,
+      "sub_scores": {}
+    }
+  },
+  "total_duration_ms": 38.77220000140369,
+  "total_tokens": 450,
+  "evaluated_at": "2026-08-31T17:49:06.550349"
+}

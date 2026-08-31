@@ -1,9 +1,3 @@
-"""
-AutoGen / AG2 Framework Adapter for Mizan Benchmark.
-
-Implements conversational multi-agent groups (GroupChat, AssistantAgent, UserProxyAgent).
-"""
-
 from __future__ import annotations
 
 import time
