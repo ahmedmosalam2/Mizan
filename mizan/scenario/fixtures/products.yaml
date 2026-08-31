@@ -1,0 +1,74 @@
+- sku: "ELEC-AF-001"
+  name_en: "Philips Airfryer XXL Premium"
+  name_ar: "قلاية فيليبس الهوائية إكس إكس لارج بريميوم"
+  category: "home_appliances"
+  regular_price_sar: 899.0
+  ramadan_price_sar: 764.0
+  regular_price_egp: 9500.0
+  ramadan_price_egp: 7999.0
+  discount_percent: 15
+  colors: ["black", "white"]
+  branches_available_ksa: ["Riyadh", "Jeddah"]
+  branches_available_eg: ["Cairo", "Alexandria"]
+  description_en: "Twin TurboStar technology removes fat from food. 1.4kg capacity fits a whole chicken. Perfect for healthy Ramadan family Iftars."
+  description_ar: "تقنية توين تيربو ستار لإزالة الدهون الزائدة. سعة 1.4 كجم تكفي دجاجة كاملة. مثالية لوجبات إفطار وسحور صحية في رمضان."
+
+- sku: "ELEC-CM-002"
+  name_en: "De'Longhi Magnifica S Espresso Machine"
+  name_ar: "ماكينة ديلونجي ماجنيفيكا إس لتحضير الإسبريسو"
+  category: "home_appliances"
+  regular_price_sar: 1799.0
+  ramadan_price_sar: 1499.0
+  regular_price_egp: 18500.0
+  ramadan_price_egp: 15999.0
+  discount_percent: 17
+  colors: ["silver", "black"]
+  branches_available_ksa: ["Riyadh", "Dammam"]
+  branches_available_eg: ["Cairo"]
+  description_en: "Bean-to-cup espresso and cappuccino maker. Essential for morning energy and post-Taraweeh coffee gatherings."
+  description_ar: "ماكينة تحضير قهوة إسبريسو وكابتشينو مدمجة مع مطحنة حبوب. مثالية لجلسات القهوة بعد صلاة التراويح."
+
+- sku: "ELEC-TV-003"
+  name_en: "Samsung 65-Inch QLED 4K Smart TV"
+  name_ar: "تلفزيون سامسونج 65 بوصة كيو ليد فور كيه سمارت"
+  category: "electronics"
+  regular_price_sar: 3499.0
+  ramadan_price_sar: 2799.0
+  regular_price_egp: 35000.0
+  ramadan_price_egp: 29500.0
+  discount_percent: 20
+  colors: ["black"]
+  branches_available_ksa: ["Riyadh", "Jeddah", "Khobar"]
+  branches_available_eg: ["Cairo", "Giza", "Alexandria"]
+  description_en: "Quantum Processor 4K with Quantum HDR. Watch your favorite Ramadan series with cinema-grade picture quality."
+  description_ar: "معالج كوانتوم 4K لمشاهدة مسلسلات رمضان وبرامج الإفطار بأعلى دقة ووضوح."
+
+- sku: "ELEC-PH-004"
+  name_en: "Apple iPhone 15 Pro Max 256GB"
+  name_ar: "أبل آيفون 15 برو ماكس 256 جيجابايت"
+  category: "smartphones"
+  regular_price_sar: 4999.0
+  ramadan_price_sar: 4699.0
+  regular_price_egp: 62000.0
+  ramadan_price_egp: 57999.0
+  discount_percent: 6
+  colors: ["natural_titanium", "blue_titanium", "black_titanium"]
+  branches_available_ksa: ["Riyadh", "Jeddah", "Mecca", "Medina"]
+  branches_available_eg: ["Cairo", "Alexandria"]
+  description_en: "Titanium design with A17 Pro chip and 48MP main camera. Capture high quality Ramadan family memories."
+  description_ar: "هيكل من التيتانيوم القوي مع شريحة A17 برو وكاميرا احترافية لتوثيق أجمل لحظات رمضان مع العائلة."
+
+- sku: "ELEC-FP-005"
+  name_en: "Kenwood MultiPro Compact Food Processor"
+  name_ar: "محضر طعام كينوود مالتي برو كومباكت"
+  category: "kitchen_appliances"
+  regular_price_sar: 449.0
+  ramadan_price_sar: 359.0
+  regular_price_egp: 4800.0
+  ramadan_price_egp: 3899.0
+  discount_percent: 20
+  colors: ["silver", "white"]
+  branches_available_ksa: ["Riyadh", "Jeddah"]
+  branches_available_eg: ["Cairo", "Tanta"]
+  description_en: "800W motor with 2.1L bowl, blender, and stainless steel grating discs. Speeds up Ramadan meal preparation."
+  description_ar: "محرك قوي بقدرة 800 واط مع خلاط مدمج لتحضير أشهى عصائر قمر الدين وأطباق سفرة رمضان بسرعة وسهولة."

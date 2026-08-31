@@ -1,0 +1,30 @@
+- name: "meta_ads"
+  market: "KSA"
+  api_endpoint: "https://graph.facebook.com/v19.0/act_ksa_marketing/adsets"
+  injected_failure: null
+
+- name: "meta_ads"
+  market: "EG"
+  api_endpoint: "https://graph.facebook.com/v19.0/act_eg_marketing/adsets"
+  injected_failure: null
+
+- name: "snapchat"
+  market: "KSA"
+  api_endpoint: "https://adsapi.snapchat.com/v1/campaigns"
+  injected_failure: "API_RATE_LIMIT"
+
+- name: "google_ads"
+  market: "KSA"
+  api_endpoint: "https://googleads.googleapis.com/v16/customers/ksa/campaigns"
+  injected_failure: null
+
+- name: "whatsapp"
+  market: "KSA"
+  api_endpoint: "https://api.unifonic.com/v1/messages/whatsapp"
+  injected_failure: "TEMPLATE_REJECTED"
+  fallback_channel: "sms"
+
+- name: "sms"
+  market: "KSA"
+  api_endpoint: "https://api.unifonic.com/v1/messages/sms"
+  injected_failure: null

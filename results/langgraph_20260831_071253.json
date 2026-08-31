@@ -1,0 +1,86 @@
+{
+  "framework": "langgraph",
+  "run_id": "dea4b348",
+  "total_score": 9.22,
+  "dimension_scores": {
+    "orchestration": {
+      "score": 10.0,
+      "weight": 0.2,
+      "sub_scores": {
+        "multi_agent_creation": 10.0,
+        "task_decomposition": 10.0,
+        "sequential_execution": 10.0,
+        "parallel_execution": 10.0,
+        "conditional_branching": 10.0,
+        "error_recovery": 10.0,
+        "inter_agent_communication": 10.0
+      }
+    },
+    "tool_use": {
+      "score": 7.5,
+      "weight": 0.15,
+      "sub_scores": {
+        "function_calling": 0.0,
+        "rag_retrieval": 10.0,
+        "api_integration": 10.0,
+        "tool_chaining": 10.0,
+        "output_quality": 10.0
+      }
+    },
+    "safety": {
+      "score": 10.0,
+      "weight": 0.15,
+      "sub_scores": {
+        "saudi_id_detection": 10.0,
+        "egyptian_id_detection": 10.0,
+        "phone_email_detection": 10.0,
+        "pii_redaction": 10.0,
+        "jurisdiction_awareness": 10.0,
+        "audit_logging": 10.0
+      }
+    },
+    "human_in_the_loop": {
+      "score": 10.0,
+      "weight": 0.15,
+      "sub_scores": {
+        "pause_resume": 10.0,
+        "conditional_gates": 10.0,
+        "feedback_injection": 10.0,
+        "multi_approver": 10.0
+      }
+    },
+    "memory": {
+      "score": 10.0,
+      "weight": 0.1,
+      "sub_scores": {
+        "cross_session_recall": 10.0,
+        "short_term_context": 10.0,
+        "shared_state": 10.0,
+        "checkpointing": 10.0
+      }
+    },
+    "observability": {
+      "score": 6.0,
+      "weight": 0.1,
+      "sub_scores": {
+        "execution_trace": 5.0,
+        "token_cost_tracking": 5.0,
+        "error_handling": 5.0,
+        "structured_logs": 10.0
+      }
+    },
+    "multimodal": {
+      "score": 10.0,
+      "weight": 0.15,
+      "sub_scores": {
+        "image_understanding": 10.0,
+        "content_from_image": 10.0,
+        "document_handling": 10.0,
+        "format_compliance": 10.0
+      }
+    }
+  },
+  "total_duration_ms": 40.48309993231669,
+  "total_tokens": 4100,
+  "evaluated_at": "2026-08-31T07:12:53.429818"
+}

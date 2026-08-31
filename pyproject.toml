@@ -1,175 +1,94 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "mizan"
 version = "2.0.0"
-description = "AI Agentic Framework Benchmark for MENA E-Commerce — Compare 20 frameworks on a real-world Ramadan campaign scenario."
-readme = "README.md"
-license = "MIT"
-requires-python = ">=3.10"
-authors = [
-    { name = "Ahmed Mosalam" },
-]
-keywords = ["benchmark", "ai-agents", "mena", "arabic", "llm", "multi-agent"]
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
+description = "Omnichannel Ramadan Campaign Benchmark — 20 AI agentic frameworks, one real-world scenario"
+requires-python = ">=3.11"
 
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-]
-
-# Core dependencies — always installed
 dependencies = [
-    "fastapi>=0.110.0",
-    "uvicorn[standard]>=0.29.0",
-    "pydantic>=2.0",
-    "python-dotenv>=1.0.0",
-    "httpx>=0.27.0",
+    # Core runtime — always installed
+    "pydantic>=2.7",
     "pyyaml>=6.0",
-    "openai>=1.40.0",
+    "httpx>=0.27",
+    "rich>=13.0",          # CLI output / leaderboard tables
+    "typer>=0.12",         # CLI
+    "python-dotenv>=1.0",
+    "openai>=1.40",        # default LLM backend
+    "tiktoken>=0.7",       # token counting
+    "jinja2>=3.1",         # report templates
+    "aiofiles>=24.0",
+    "structlog>=24.0",     # structured logging
+    "tenacity>=8.3",       # retry logic in runner
 ]
 
 [project.optional-dependencies]
-# Individual framework extras
-crewai = ["crewai>=0.80.0"]
+# ── Framework extras — install only what you need ──────────────────────
+crewai = [
+    "crewai>=0.80.0",
+    "crewai-tools>=0.14.0",
+]
 langgraph = [
-    "langgraph>=0.2.0",
-    "langchain-groq>=0.2.0",
-    "langchain-core>=0.3.0",
+    "langgraph>=0.2.55",
+    "langchain>=0.3.0",
+    "langchain-openai>=0.2.0",
 ]
 autogen = [
-    "autogen-agentchat>=0.4.0",
-    "autogen-ext[openai]>=0.4.0",
+    "pyautogen>=0.4.0",
 ]
-openai-agents = ["openai-agents>=0.1.0"]
-google-adk = ["google-adk>=1.0.0"]
-pydantic-ai = ["pydantic-ai>=0.1.0"]
-smolagents = [
-    "smolagents>=1.0.0",
-    "litellm>=1.40.0",
+agno = [
+    "agno>=1.3.0",
 ]
 llamaindex = [
     "llama-index>=0.11.0",
-    "llama-index-llms-groq>=0.2.0",
+    "llama-index-llms-openai>=0.3.0",
 ]
-haystack = ["haystack-ai>=2.5.0"]
-agno = ["agno>=1.0.0"]
-atomic-agents = [
-    "atomic-agents>=1.0.0",
-    "instructor>=1.4.0",
+haystack = [
+    "haystack-ai>=2.5.0",
+    "openai-haystack>=2.0.0",
 ]
-camel = ["camel-ai[all]>=0.2.0"]
-taskflowai = ["taskflowai>=0.2.0"]
-controlflow = ["controlflow>=0.11.0"]
 
-# Grouped extras
-code-first = [
+# Install all 6 Phase-1 frameworks
+phase1 = [
     "mizan[crewai]",
     "mizan[langgraph]",
     "mizan[autogen]",
-    "mizan[openai-agents]",
-    "mizan[google-adk]",
-    "mizan[pydantic-ai]",
-    "mizan[smolagents]",
+    "mizan[agno]",
     "mizan[llamaindex]",
     "mizan[haystack]",
-    "mizan[agno]",
-    "mizan[atomic-agents]",
-    "mizan[camel]",
-    "mizan[taskflowai]",
-    "mizan[controlflow]",
 ]
 
-# All framework dependencies
-all = [
-    "mizan[code-first]",
-    "groq>=0.9.0",
-]
-
-# Development tools
+# Development
 dev = [
     "pytest>=8.0",
-    "pytest-asyncio>=0.23",
+    "pytest-asyncio>=0.24",
     "pytest-cov>=5.0",
-    "mypy>=1.10",
-    "ruff>=0.4.0",
-    "black>=24.0",
-    "isort>=5.13",
-    "pre-commit>=3.7",
+    "ruff>=0.6",
+    "mypy>=1.11",
 ]
 
 [project.scripts]
-mizan-run    = "runner.run_scenario:main"
-mizan-matrix = "runner.run_matrix:main"
-
-[project.urls]
-Homepage = "https://github.com/ahmedmosalam2/Mizan"
-Documentation = "https://github.com/ahmedmosalam2/Mizan#readme"
-Repository = "https://github.com/ahmedmosalam2/Mizan"
-Issues = "https://github.com/ahmedmosalam2/Mizan/issues"
-
-# ═══════════════════════════════════════════════════════════════
-# Tool Configuration
-# ═══════════════════════════════════════════════════════════════
+mizan = "mizan.cli:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["shared*", "scenarios*", "frameworks*", "runner*"]
+include = ["mizan*"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "shared"]
 asyncio_mode = "auto"
-markers = [
-    "slow: marks tests that take a long time (deselect with '-m \"not slow\"')",
-    "integration: marks integration tests requiring external services",
-]
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-]
-
-[tool.mypy]
-python_version = "3.10"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-check_untyped_defs = true
-ignore_missing_imports = true
-exclude = [
-    "build/",
-    "dist/",
-    "venv/",
-    ".venv/",
-]
+testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py310"
-line-length = 120
+line-length = 100
+target-version = "py311"
 
 [tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "N",   # pep8-naming
-    "UP",  # pyupgrade
-]
-ignore = [
-    "E501",  # line too long (handled by formatter)
-]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
 
-[tool.black]
-line-length = 120
-target-version = ["py310"]
-
-[tool.isort]
-profile = "black"
-line_length = 120
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true

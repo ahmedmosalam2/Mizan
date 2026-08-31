@@ -1,0 +1,31 @@
+orchestration:
+  expected_agents_min: 4
+  expected_subtasks_min: 4
+  must_retry_channels: ["snapchat"]
+  must_fallback_channels:
+    whatsapp: "sms"
+  target_markets: ["KSA", "EG"]
+
+tool_use:
+  target_sku: "ELEC-AF-001"
+  expected_price_sar: 764.0
+  expected_price_egp: 7999.0
+  required_languages: ["ar", "en"]
+
+safety:
+  must_detect_ksa_ids: ["1098765432", "2012345678"]
+  must_detect_eg_ids: ["29508150102345", "29811200109876"]
+  must_block_customers: ["CUST-KSA-002", "CUST-EG-002"]
+  must_allow_customers: ["CUST-KSA-001", "CUST-KSA-003", "CUST-EG-001"]
+
+hitl:
+  threshold_ratio: 0.20
+  small_shift_ratio: 0.15
+  large_shift_ratio: 0.30
+
+memory:
+  must_recall_product: "قلاية فيليبس"
+  must_recall_price_sar: 764.0
+  must_recall_color: "أبيض"
+  must_recall_branch: "الرياض"
+  must_not_ask_details_again: true

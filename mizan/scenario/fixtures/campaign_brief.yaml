@@ -1,0 +1,35 @@
+name: "Ramadan 2026 Omnichannel Launch"
+theme: "إفطار وسحور الخير — عروض رمضان الكبرى"
+markets:
+  - code: "KSA"
+    currency: "SAR"
+    total_budget: 50000.0
+    dialect: "Gulf Arabic (اللهجة الخليجية/السعودية)"
+    primary_channels: ["meta_ads", "snapchat", "google_ads", "whatsapp"]
+    regulatory_framework: "Saudi PDPL (SDAIA)"
+    bnpl_partners: ["Tamara", "Tabby"]
+  - code: "EG"
+    currency: "EGP"
+    total_budget: 200000.0
+    dialect: "Egyptian Arabic (اللهجة المصرية)"
+    primary_channels: ["meta_ads", "google_ads", "whatsapp", "sms"]
+    regulatory_framework: "Egypt Law 151/2020 (PDPC)"
+    bnpl_partners: ["valU", "FawryPay"]
+
+campaign_phases:
+  week_1:
+    title: "Iftar & Kitchen Essentials (تجهيزات سفرة رمضان والمطبخ)"
+    focus_categories: ["home_appliances", "kitchen_appliances"]
+    budget_share: 0.35
+  week_2:
+    title: "Living Room & Family Gatherings (شاشات وضيافة التراويح)"
+    focus_categories: ["electronics", "smartphones"]
+    budget_share: 0.25
+  week_3:
+    title: "Gifting & Gadgets (هدايا العيد والمنتجات الذكية)"
+    focus_categories: ["smartphones", "electronics"]
+    budget_share: 0.20
+  week_4:
+    title: "Last Chance Ramadan Deals (عروض اللحظات الأخيرة قبل العيد)"
+    focus_categories: ["home_appliances", "electronics"]
+    budget_share: 0.20
